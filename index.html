@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-gray-100">
+<head>
+  <meta charset="UTF-8" />
+  <title>Drugs Inventory Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="Resources/Dims 32 x 32.png" />
+
+  <!-- PWA manifest -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#7c3aed" />
+  
+
+  <!-- Tailwind via CDN -->
+  <!-- <script src="https://cdn.tailwindcss.com"></script> // for online access -->
+   <script src="./libs/tailwind.js"></script>
+  <script>
+    // Tailwind dark mode config
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#7c3aed' // purple accent
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- jsPDF (UMD) via CDN -->
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+          integrity="sha512-/2fR5pDhVQ1l2UJSq5n9CwZ9N2J4Ti+pf8Li84qZr5utnrN2Fv8Hw6mwV8FaLhn3sG+oO9pApjQbMh2P2Gd9Cw=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"></script> // for online access -->
+          <script src="./libs/jspdf.umd.min.js"></script>
+
+  <!-- <style>
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      /* Make ONLY reports sections visible */
+      #section-reports, #section-reports * {
+        visibility: visible;
+      }
+      #section-reports {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+    }
+  </style> -->
+
+  <!-- <style>
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+
+    /* Make reports, inventory, and dispense sections visible */
+    #section-reports, #section-reports *,
+    #section-inventory, #section-inventory *,
+    #section-dispense, #section-dispense * {
+      visibility: visible;
+    }
+
+    /* Position each section for printing */
+    #section-reports,
+    #section-inventory,
+    #section-dispense {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+    }
+  }
+</style> -->
+
+<style>
+    /* ---- PRINT RULES starts ---- */
+  @media print {
+    body * {
+      visibility: visible;
+    }
+    /* To Hide everything in the <body> tag by default, use */
+    /* 
+    body * {
+      visibility: hidden;
+    }
+     */
+    .printable, .printable * {
+      visibility: visible;
+    }
+    .printable {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+    }
+    .print-icon {
+    display: none !important;
+  }
+  /* Fallback: if no .printable is set, show all main sections */
+    #section-reports, #section-reports *,
+    #section-inventory, #section-inventory *,
+    #section-dispense, #section-dispense * {
+      visibility: visible;
+    }
+    .scroll-footer {
+        visibility: hidden;          /* stays at bottom of screen */
+  
+    }
+
+    .scroll-text {
+        visibility: hidden;
+    }
+  }
+  /* ---- PRINT RULES Ends ---- */
+
+  /* ----- Footer scroll css START ------- */
+
+  .scroll-footer {
+  position: fixed;          /* stays at bottom of screen */
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #1f2937;    /* dark gray background */
+  color: #f9fafb;         /* light text */
+  padding: 0.5rem 0;
+  overflow: hidden;         /* hide text outside container */
+  z-index: 50;
+}
+
+.scroll-text {
+  display: inline-block;
+  white-space: nowrap;
+  padding-left: 100%;       /* start off-screen to the right */
+  animation: scroll-left 12s linear infinite;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+/* Pause animation when hovering */
+.scroll-footer:hover .scroll-text {
+  animation-play-state: paused;
+}
+
+@keyframes scroll-left {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+  /* ----- Footer scroll css END ------- */
+
+
+/* ============================================================
+   WELCOME MODAL ANIMATIONS
+   ============================================================ */
+.fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.fade-out {
+  animation: fadeOut 0.6s ease-in forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+  
+</style>
+
+
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
+
+  <!-- ++++++++++++++++++++++ WELCOME MODAL BEGINS ++++++++++++++ -->
+
+  <!-- Welcome Modal -->
+<div id="welcome-modal" class="fixed inset-0 flex items-center justify-center bg-gray-900 z-[99]">
+  <div class="bg-gray-800 text-gray-100 rounded-lg shadow-lg p-6 w-11/12 max-w-md text-center border border-gray-600">
+    <!-- Logo -->
+    <h1 class="flex items-center justify-center gap-2 text-3xl font-bold mb-4">
+      <img src="Resources/Dims 400 x 400.png" 
+           alt="Drug Logo" 
+           class="w-16 h-16 rounded-full " />
+      Cathy-D<span class="text-green-600 -ml-2 -mr-2 font-extrabold">i</span>MS
+    </h1>
+    <!-- <p class="mb-6 text-lg">Welcome to Drugs Inventory Management</p> -->
+    <p class="mb-6 text-lg">Welcome!</p>
+
+    <!-- PIN input -->
+    <input id="welcome-pin" type="password" 
+           placeholder="Insert PIN" 
+           class="w-full px-3 py-2 rounded border border-gray-600 bg-gray-900 text-gray-100 mb-4" />
+
+    <button id="welcome-submit" 
+            class="w-full px-4 py-2 bg-primary text-white rounded hover:bg-purple-700">
+      Enter
+    </button>
+  </div>
+</div>
+
+<!-- ++++++++++++++++++++++ WELCOME MODAL ENDS +++++++++++++++++++++ -->
+
+
+  <div class="max-w-7xl mx-auto py-4 px-3 md:py-6 md:px-4">
+    <!-- Header row with title + dark mode toggle -->
+    <div class="flex items-center justify-between mb-2 ">
+  <h1 class="flex items-center gap-2 text-2xl md:text-3xl font-bold text-center md:text-left">
+    <!-- Logo with purple circular border -->
+    <img src="Resources/Dims 400 x 400.png" 
+         alt="Drug Logo" 
+         class="w-14 h-14 rounded-full border-1 border-purple-50" />
+    Cathy-D<span class="text-green-600 -ml-2 -mr-2 font-extrabold">i</span>MS
+    <!-- Drugs Inventory Management -->
+  </h1>
+  <!-- Dark mode toggle (Sun/Moon) -->
+  <button id="theme-toggle"
+          class="flex items-center gap-2 px-3 py-1 rounded-full border border-gray-300 dark:border-gray-600 text-sm hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+    <span id="theme-icon">🌞</span>
+    <span id="theme-label">Light</span>
+  </button>
+</div>
+
+
+    <!-- Tabs / Navigation -->
+    <div class="flex flex-col md:flex-row flex-wrap gap-2 mb-2 sticky top-0 py-2 bg-gray-100 dark:bg-gray-900 z-50">
+      <button id="tab-inventory" class="flex-1 px-4 py-2 bg-primary text-white rounded text-center">
+        Inventory
+      </button>
+      <button id="tab-dispense" class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-800 dark:text-gray-100 rounded text-center">
+        Dispense
+      </button>
+      <button id="tab-reports" class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-800 dark:text-gray-100 rounded text-center">
+        Reports
+      </button>
+      <button id="tab-settings" class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-800 dark:text-gray-100 rounded text-center">
+        Settings
+      </button>
+      <button id="tab-about" class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-800 dark:text-gray-100 rounded text-center">
+        About
+      </button>
+      <button id="tab-help" class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-800 dark:text-gray-100 rounded text-center">
+        Help
+      </button>
+    </div>
+
+    <!-- Inventory section -->
+    <section id="section-inventory" class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-6 rounded shadow">
+      <h2 class="text-xl font-semibold mb-4">Inventory</h2>
+
+      
+<button onclick="printSection('section-reports')">Print Reports</button>
+<button onclick="printSection('section-inventory')">Print Inventory</button>
+<button onclick="printSection('section-dispense')">Print Dispense</button>
+
+<!-- Inside section-reports -->
+<span class="print-icon" style="cursor:pointer; font-size:20px;" onclick="printSection('section-reports')" title="Print Reports">🖨️</span>
+
+<!-- Inside section-inventory -->
+<span class="print-icon" style="cursor:pointer; font-size:20px;" onclick="printSection('section-inventory')" title="Print Inventory">🖨️</span>
+
+<!-- Inside section-dispense -->
+<span class="print-icon" style="cursor:pointer; font-size:20px;" onclick="printSection('section-dispense')" title="Print Dispense">🖨️</span>
+
+
+
+      <!-- Add / Update form -->
+      <form id="drug-form" class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+        <input type="hidden" id="drug-id" />
+
+        <div>
+          <label class="block text-sm font-medium">Drug Name</label>
+          <input id="drug-name" class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" required />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium">Classification</label>
+          <input id="drug-classification" class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium">Sub-Class</label>
+          <input id="drug-subClass" class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium">Expiry Date</label>
+          <input id="drug-expiry" type="date" class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" required />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium">Pack Size</label>
+          <input id="pack-size" type="number" min="0" class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" placeholder="tablet, vial, bottle, mg, ml, mcg..." />
+        </div>
+
+        <!-- <div>
+          <label class="block text-sm font-medium">Unit</label>
+          <input id="drug-unit" class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" placeholder="tablet, vial, bottle, mg, ml, mcg..." />
+        </div> -->
+
+        <div>
+  <label class="block text-sm font-medium">Unit</label>
+  <select id="drug-unit" 
+          class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700">
+    <option value="">Select unit</option>
+    <option value="mcg">mcg</option>
+    <option value="mg">mg</option>
+    <option value="g">g</option>
+    <option value="mL">mL</option>
+    <option value="L">L</option>
+    <option value="Other">Other (type manually)</option>
+  </select>
+  <input id="drug-unit-text" 
+         class="mt-2 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700 hidden"
+         placeholder="Enter unit manually" />
+</div>
+
+        <div>
+          <label class="block text-sm font-medium">Quantity Supplied</label>
+          <input id="drug-quantity" type="number" min="0"
+                 class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" required />
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            This sets the current stock. Use "Add Stock" for increments.
+          </p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium">Critical Level</label>
+          <input id="drug-critical" type="number" min="0"
+                 class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" />
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            When quantity ≤ this, the item is flagged as critical.
+          </p>
+        </div>
+
+        <div class="flex items-end">
+          <button type="submit" class="px-4 py-2 md:mb-8 bg-primary text-white rounded w-full">
+            Save / Add
+          </button>
+        </div>
+
+
+
+      </form>
+
+      <!-- Search / Filter for inventory -->
+      <div class="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <input id="search-name" placeholder="Search by drug name"
+               class="border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" />
+        <input id="search-classification" placeholder="Filter by classification"
+               class="border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" />
+        <!-- ++++++ UNDO Ends here +++++ -->
+        <!-- <select id="search-critical" class="border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700">
+          <option value="">All</option>
+          <option value="critical">Critical only</option>
+        </select> -->
+
+        <select id="status-filter" class="border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700">
+          <option value="all" selected>All</option>
+          <option value="ok">Ok</option>
+          <option value="out">Out</option>
+          <option value="critical">Critical Only</option>
+          <option value="critical-ok">Critical + Ok</option>
+          <option value="critical-out">Critical + Out</option>
+          <option value="expired">Expired</option>
+        </select>
+
+        <button id="btn-export-inventory-pdf"
+        class="px-4 py-2 bg-red-600 text-white rounded mb-2">
+          Export Inventory to PDF
+        </button>
+
+
+      </div>
+
+      <!-- Inventory table -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm" id="inventory-table">
+          <thead>
+            <tr class="bg-gray-200 dark:bg-gray-700 text-left">
+              <th class="px-2 py-1">S/N</th>
+              <th class="px-2 py-1">Name</th>
+              <th class="px-2 py-1">Class</th>
+              <th class="px-2 py-1">Sub-Class</th>
+              <th class="px-2 py-1">Expiry Date</th>
+              <th class="px-2 py-1">Pack-Size</th>
+              <th class="px-2 py-1">Unit</th>
+              <th class="px-2 py-1">Stock</th>
+              <th class="px-2 py-1">Critical-Qty</th>
+              <th class="px-2 py-1">Qty-Status</th>
+              <th class="px-2 py-1">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="inventory-table-body"></tbody>
+        </table>
+      </div>
+
+      <!-- +++++++++++++ Pagination started by Harry ++++++++++++++ -->
+
+      <!-- Pagination controls -->
+      <div class="mt-3 flex flex-col md:flex-row items-center justify-between gap-2 text-sm">
+        <div class="flex items-center gap-2">
+          <span>Rows per page:</span>
+          <select id="inventory-page-size"
+                  class="border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700 text-sm">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="inventory-prev-page"
+                  class="px-3 py-1 border rounded bg-gray-100 dark:bg-gray-700 dark:text-gray-100">
+            Prev
+          </button>
+          <div id="inventory-page-numbers" class="flex items-center gap-1">
+            <!-- Page buttons injected by JS -->
+          </div>
+          <button id="inventory-next-page"
+                  class="px-3 py-1 border rounded bg-gray-100 dark:bg-gray-700 dark:text-gray-100">
+            Next
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Dispense section -->
+    <section id="section-dispense" class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-6 rounded shadow hidden">
+      <h2 class="text-xl font-semibold mb-4">Dispense Drugs</h2>
+
+    
+      <button onclick="printSection('section-reports')">Print Reports</button>
+      <button onclick="printSection('section-inventory')">Print Inventory</button>
+      <button onclick="printSection('section-dispense')">🖨️ Print Dispense</button>
+
+      <!-- Inside section-reports -->
+      <span class="print-icon" style="cursor:pointer; font-size:20px;" onclick="printSection('section-reports')" title="Print Reports">🖨️</span>
+
+      <!-- Inside section-inventory -->
+      <span class="print-icon" style="cursor:pointer; font-size:20px;" onclick="printSection('section-inventory')" title="Print Inventory">🖨️</span>
+
+      <!-- Inside section-dispense -->
+      <span class="print-icon" style="cursor:pointer; font-size:20px;" onclick="printSection('section-dispense')" title="Print Dispense">🖨️</span>
+
+
+      <form id="dispense-form" class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+        <div>
+          <label class="block text-sm font-medium">Drug</label>
+          <select id="dispense-drug" class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700"></select>
+        </div>
+
+        <!-- <div>
+          <label class="block text-sm font-medium">Department</label>
+          <select id="dispense-department-select" class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700">
+            <option value="">Select department</option>
+            <option value="OPD">OPD</option>
+            <option value="Emergency">Emergency</option>
+            <option value="Theatre">Theatre</option>
+            <option value="Maternity">Maternity</option>
+            <option value="Paediatrics">Paediatrics</option>
+            <option value="Presidential Wing">Presidential Wing</option>
+            <option value="Travel-Bag">Travel Bag</option>
+            <option value="Other">Other (type manually)</option>
+          </select>
+          <input id="dispense-department-text"
+                 class="mt-2 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700 hidden"
+                 placeholder="Enter department name manually" />
+        </div> -->
+
+        <div>
+          <label class="block text-sm font-medium">Department</label>
+          <select id="dispense-department-select" class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700">
+            <option value="">Select department</option>
+            <option value="A & E">A & E</option>
+            <option value="ENT">ENT</option>
+            <option value="General Ward">General Ward</option>
+            <option value="GOPD Pharmacy">GOPD Pharmacy</option>
+            <option value="O & G">O & G</option>
+            <option value="Presidential Wing">Presidential Wing</option>
+            <option value="Travel-Bag">Travel Bag</option>
+            <option value="Other">Other (type manually)</option>
+          </select>
+          <input id="dispense-department-text"
+                 class="mt-2 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700 hidden"
+                 placeholder="Enter department name manually" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium">Quantity</label>
+          <input id="dispense-quantity" type="number" min="1"
+                class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium">Authorized by</label>
+          <select id="authorized-by-select" class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700">
+            <option value="">Select Authority</option>
+            <option value="CMAC">CMAC</option>
+            <option value="HOD Pharmacy">HOD Pharmacy</option>
+            <option value="DD">DD</option>
+            <option value="Director">Director</option>
+            <!-- <option value="Paediatrics">Paediatrics</option> -->
+            <option value="Other">Other (type manually)</option>
+          </select>
+          <input id="approved-by-text"
+                 class="mt-2 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700 hidden"
+                 placeholder="Enter authorization manually" />
+        </div>
+
+        <div class="flex items-end">
+          <button type="submit" class="px-4 py-2 bg-primary text-white rounded w-full">
+            Dispense
+          </button>
+        </div>
+      </form>
+
+      <!-- Recent dispenses list -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm" >
+          <thead>
+            <tr class="bg-gray-200 dark:bg-gray-700 text-left">
+              <th class="px-2 py-1">S/N</th>
+              <th class="px-2 py-1">Date</th>
+              <th class="px-2 py-1">Drug Name</th>
+              <th class="px-2 py-1">Classification</th>
+              <th class="px-2 py-1">Sub-Class</th>
+              <th class="px-2 py-1">Expiry Date</th>
+              <th class="px-2 py-1">Unit</th>
+              <th class="px-2 py-1">Qty</th>
+              <th class="px-2 py-1">Requesting Unit</th>
+              <th class="px-2 py-1">Authorized by</th>
+            </tr>
+          </thead>
+          <tbody id="dispense-table-body"></tbody>
+        </table>
+      </div>
+
+      <!-- +++++++++++++ Dispense Pagination started by Harry ++++++++++++++ -->
+      <!-- ==========
+      DISPENSE PAGINATION CONTROLS
+      ============ -->
+      <div class="flex items-center justify-between mt-4">
+
+        <!-- Rows per page selector -->
+        <div class="flex items-center gap-2">
+          <label for="dispense-page-size" class="text-sm">Rows per page:</label>
+          <select id="dispense-page-size"
+                  class="border rounded px-2 py-1 text-sm dark:bg-gray-700 dark:text-gray-100">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+
+        <!-- Pagination buttons -->
+        <div class="flex items-center gap-2">
+
+          <!-- Prev button -->
+          <button id="dispense-prev-page"
+                  class="px-3 py-1 border rounded text-sm dark:bg-gray-700 dark:text-gray-100">
+            Prev
+          </button>
+
+          <!-- Page numbers (Smart Pagination will inject here) -->
+          <div id="dispense-page-numbers" class="flex items-center gap-1">
+            <!-- JS will insert: 1 … 4 5 [6] 7 8 … 90 -->
+          </div>
+
+          <!-- Next button -->
+          <button id="dispense-next-page"
+                  class="px-3 py-1 border rounded text-sm dark:bg-gray-700 dark:text-gray-100">
+            Next
+          </button>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Reports section -->
+    <section id="section-reports" class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-6 rounded shadow hidden">
+      <h2 class="text-xl font-semibold mb-4">Reports</h2>
+
+      <button onclick="printSection('section-reports')">Print Reports</button>
+      <button onclick="printSection('section-inventory')">Print Inventory</button>
+      <button onclick="printSection('section-dispense')">Print Dispense</button>
+
+      <!-- Inside section-reports -->
+      <span class="print-icon" style="cursor:pointer; font-size:20px;" onclick="printSection('section-reports')" title="Print Reports">🖨️ Print Report</span>
+
+      <!-- Inside section-inventory -->
+      <span class="print-icon" style="cursor:pointer; font-size:20px;" onclick="printSection('section-inventory')" title="Print Inventory">🖨️</span>
+
+      <!-- Inside section-dispense -->
+      <span class="print-icon" style="cursor:pointer; font-size:20px;" onclick="printSection('section-dispense')" title="Print Dispense">🖨️</span>
+
+
+
+      <!-- Filter controls -->
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+        <select id="report-period" class="border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700">
+          <option value="">Select period:</option>
+          <option value="today">Today</option>
+          <option value="week">This week</option>
+          <option value="month">This month</option>
+          <option value="custom">Custom range</option>
+        </select>
+
+        <input id="report-from" type="date" class="border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" />
+        <input id="report-to" type="date" class="border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" />
+        <input id="report-department" placeholder="Filter by department"
+              class="border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" />
+        
+        <!-- ++++++++ Harry Added Sorting Here ++++++ -->
+          
+        <!-- Sorting -->
+        <!-- <div class="flex items-center gap-2"> -->
+          <!-- <label class="text-sm whitespace-nowrap">Sort by:</label> -->
+          <select id="report-sort"
+                  class="border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700">
+            <option value="">Sort table by:</option>
+            <option value="date-desc">Date (Newest → Oldest)</option>
+            <option value="date-asc">Date (Oldest → Newest)</option>
+            <option value="drug-asc">Drug A–Z</option>
+            <option value="drug-desc">Drug Z–A</option>
+            <option value="qty-asc">Quantity Low → High</option>
+            <option value="qty-desc">Quantity High → Low</option>
+            <option value="dept-asc">Department A–Z</option>
+          </select>
+        <!-- </div> -->
+      </div>
+
+      <!-- ======== 15 Dec inputs Starts =========== -->
+      <!-- NEW: PDF Reports block (Option C: below filters, above summaries) -->
+      <div class="border rounded p-3 mb-4 dark:border-gray-700">
+        <h3 class="font-semibold mb-2 text-sm">PDF Reports</h3>
+        <div class="flex flex-col md:flex-row gap-2">
+          <!-- Main filtered table PDF -->
+          <button id="btn-export-pdf"
+                  class="px-4 py-2 bg-red-600 text-white rounded text-sm flex-1">
+            Export Filtered Dispense PDF
+          </button>
+
+          <!-- Dashboard summary PDF -->
+          <button id="btn-dashboard-summary-pdf"
+                  class="px-4 py-2 bg-blue-600 text-white rounded text-sm flex-1">
+            Dashboard Summary PDF
+          </button>
+
+          <!-- Custom range multi-page report PDF -->
+          <button id="btn-custom-range-pdf"
+                  class="px-4 py-2 bg-purple-600 text-white rounded text-sm flex-1">
+            Custom Range Report PDF
+          </button>
+        </div>
+        <p class="mt-2 text-[11px] text-gray-500 dark:text-gray-300">
+          All PDFs respect the selected date range and filters. Dates inside the PDFs are shown in <strong>dd/mm/yyyy</strong> format.
+        </p>
+      </div>
+      <!-- ======== 15 Dec inputs Ends =========== -->
+
+      
+      <!-- Summary cards including per-department -->
+      <details class="mb-2">
+        <summary class="mb-2 cursor-pointer">Show/Hide Dispense Summary cards</summary>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div class="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 p-3 rounded">
+          <p class="text-sm text-gray-600 dark:text-gray-200">Total quantity dispensed</p>
+          <p id="report-total-qty" class="text-xl font-bold">0</p>
+        </div>
+        <div class="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 p-3 rounded">
+          <p class="text-sm text-gray-600 dark:text-gray-200">Number of dispenses</p>
+          <p id="report-total-count" class="text-xl font-bold">0</p>
+        </div>
+        <div class="bg-purple-50 dark:bg-purple-900 border border-purple-200 dark:border-purple-700 p-3 rounded">
+          <p class="text-sm text-gray-600 dark:text-gray-200">Departments summary</p>
+          <div id="report-dept-summary" class="text-xs mt-1 space-y-1">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+      </div>
+      </details>
+      
+
+      <!-- Report table -->
+      <div class="overflow-x-auto mb-4">
+        <table class="min-w-full text-sm" id="reports-table">
+          <thead>
+            <tr class="bg-gray-200 dark:bg-gray-700 text-left">
+              <th class="px-2 py-1">S/N</th>
+              <th class="px-2 py-1">Date</th>
+              <th class="px-2 py-1">Drug</th>
+              <th class="px-2 py-1">Department</th>
+              <th class="px-2 py-1">Qty</th>
+              <th class="px-2 py-1">Classification</th>
+            </tr>
+          </thead>
+          <tbody id="reports-table-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Export buttons -->
+      <!-- <div class="flex flex-col md:flex-row gap-2">
+        <button id="btn-export-pdf" class="px-4 py-2 bg-red-600 text-white rounded flex-1">
+          Export to PDF
+        </button>
+        <button id="btn-export-excel" class="px-4 py-2 bg-green-600 text-white rounded flex-1">
+          Export to Excel (CSV)
+        </button>
+      </div> -->
+
+      <!-- +++++++++++++++++++++++++++++++++++++++++++++++++ -->
+      <!-- Report pagination controls -->
+      <div class="flex items-center justify-between mt-2">
+        <div class="flex items-center gap-2">
+          <label for="reports-page-size" class="text-sm">Rows per page:</label>
+          <select id="reports-page-size"
+                  class="border rounded px-2 py-1 text-sm dark:bg-gray-900 dark:border-gray-700">
+            <option value="10">10</option>
+            <option value="25" selected>25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="reports-prev-page"
+                  class="px-3 py-1 border rounded text-sm dark:bg-gray-700 dark:text-gray-100">
+            Prev
+          </button>
+          <div id="reports-page-numbers" class="flex items-center gap-1"></div>
+          <button id="reports-next-page"
+                  class="px-3 py-1 border rounded text-sm dark:bg-gray-700 dark:text-gray-100">
+            Next
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings section (PIN + Backup/Restore + Theme) -->
+    <section id="section-settings" class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-6 rounded shadow hidden">
+      <h2 class="text-xl font-semibold mb-4">Settings</h2>
+
+      <div class="max-w-2xl space-y-6">
+        <!-- Change normal PIN -->
+        <div class="border rounded p-4 dark:border-gray-700">
+          <h3 class="font-semibold mb-2 text-sm">Change Increment PIN</h3>
+          <p class="text-xs text-gray-600 dark:text-gray-300 mb-3">
+            Use your current PIN or the master PIN to set a new PIN for stock increments.
+          </p>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm">Current PIN or Master PIN</label>
+              <input id="settings-current-pin" type="password"
+                     class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" />
+            </div>
+            <div>
+              <label class="block text-sm">New PIN</label>
+              <input id="settings-new-pin" type="password"
+                     class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" />
+            </div>
+            <div>
+              <label class="block text-sm">Confirm New PIN</label>
+              <input id="settings-confirm-pin" type="password"
+                     class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" />
+            </div>
+            <button id="settings-save-pin"
+                    class="mt-2 px-4 py-2 bg-primary text-white rounded text-sm">
+              Save New PIN
+            </button>
+          </div>
+        </div>
+
+        <!-- Theme info (Dark/Light) -->
+        <div class="border rounded p-4 dark:border-gray-700">
+          <h3 class="font-semibold mb-2 text-sm">Theme</h3>
+          <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">
+            Use the sun/moon button at the top-right corner to switch between light and dark mode.
+            The app will remember your preference on this device.
+          </p>
+        </div>
+
+        <!-- Backup / Export / Import -->
+    <div class="border rounded p-4 dark:border-gray-700">
+      <h3 class="font-semibold mb-2 text-sm">Data Backup & Restore</h3>
+      <p class="text-xs text-gray-600 dark:text-gray-300 mb-3">
+        You can download a backup file of all data (inventory, dispenses, and settings) and later restore it on this or another device.
+      </p>
+
+      <div class="space-y-3 mb-4">
+        <button id="btn-backup-export"
+                class="px-4 py-2 bg-primary text-white rounded text-sm">
+          Download Backup File
+        </button>
+        <p class="text-xs text-gray-500 dark:text-gray-300">
+          This will download a JSON file you can store safely or move to another device.
+        </p>
+      </div>
+
+      <div class="space-y-3">
+        <label class="block text-sm font-medium">Restore from Backup File</label>
+        <input id="backup-file-input" type="file" accept=".json"
+               class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700 text-xs" />
+        <p class="text-xs text-gray-500 dark:text-gray-300">
+          Choose a previously downloaded backup file, then select whether to perform a <strong>Full Restore</strong> (overwrite) or <strong>Merge Restore</strong> (add only missing items).
+        </p>
+        <div class="flex flex-col md:flex-row gap-2 mt-2">
+          <button id="btn-restore-full"
+                  class="px-4 py-2 bg-red-600 text-white rounded text-sm flex-1">
+            Full Restore (Overwrite All Data)
+          </button>
+          <button id="btn-restore-merge"
+                  class="px-4 py-2 bg-green-600 text-white rounded text-sm flex-1">
+            Merge Restore (Add Missing Data Only)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inventory CSV Export / Import -->
+    <div class="border rounded p-4 dark:border-gray-700">
+      <h3 class="font-semibold mb-2 text-sm">Inventory Data (CSV)</h3>
+      <p class="text-xs text-gray-600 dark:text-gray-300 mb-3">
+        Export or import inventory data as a CSV file. You can overwrite all data or merge new entries.
+      </p>
+
+      <!-- Export Inventory -->
+      <div class="space-y-3 mb-4">
+        <button id="btn-export-inventory"
+                class="px-4 py-2 bg-primary text-white rounded text-sm">
+          Download Inventory CSV
+        </button>
+        <p class="text-xs text-gray-500 dark:text-gray-300">
+          This will download all inventory records in CSV format.
+        </p>
+      </div>
+
+      <!-- Import Inventory -->
+      <div class="space-y-3">
+        <label class="block text-sm font-medium">Import Inventory from CSV File</label>
+        <input id="excel-inventory-input" type="file" accept=".csv"
+               class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700 text-xs" />
+        <p class="text-xs text-gray-500 dark:text-gray-300">
+          Choose a CSV file exported from this app. You can perform a <strong>Full Import</strong> (overwrite) or <strong>Merge Import</strong> (add only new items).
+        </p>
+        <div class="flex flex-col md:flex-row gap-2 mt-2">
+          <button id="btn-import-inventory-full"
+                  class="px-4 py-2 bg-red-600 text-white rounded text-sm flex-1">
+            Full Import (Overwrite All Inventory)
+          </button>
+          <button id="btn-import-inventory-merge"
+                  class="px-4 py-2 bg-green-600 text-white rounded text-sm flex-1">
+            Merge Import (Add Inventory Only)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dispenses CSV Export / Import -->
+    <div class="border rounded p-4 dark:border-gray-700">
+      <h3 class="font-semibold mb-2 text-sm">Dispense Records (CSV)</h3>
+      <p class="text-xs text-gray-600 dark:text-gray-300 mb-3">
+        Export or import dispense records as a CSV file. You can overwrite all data or merge new entries.
+      </p>
+
+      <!-- Export Dispenses -->
+      <div class="space-y-3 mb-4">
+        <button id="btn-export-dispenses"
+                class="px-4 py-2 bg-primary text-white rounded text-sm">
+          Download Dispenses CSV
+        </button>
+        <p class="text-xs text-gray-500 dark:text-gray-300">
+          This will download all dispense records in CSV format.
+        </p>
+      </div>
+
+      <!-- Import Dispenses -->
+      <div class="space-y-3">
+        <label class="block text-sm font-medium">Import Dispenses from CSV File</label>
+        <input id="excel-dispenses-input" type="file" accept=".csv"
+               class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700 text-xs" />
+        <p class="text-xs text-gray-500 dark:text-gray-300">
+          Choose a CSV file exported from this app. You can perform a <strong>Full Import</strong> (overwrite) or <strong>Merge Import</strong> (add only new items).
+        </p>
+        <div class="flex flex-col md:flex-row gap-2 mt-2">
+          <button id="btn-import-dispenses-full"
+                  class="px-4 py-2 bg-red-600 text-white rounded text-sm flex-1">
+            Full Import (Overwrite All Dispenses)
+          </button>
+          <button id="btn-import-dispenses-merge"
+                  class="px-4 py-2 bg-green-600 text-white rounded text-sm flex-1">
+            Merge Import (Add Dispenses Only)
+          </button>
+        </div>
+      </div>
+    </div>
+
+        <!-- ++++++++++++ 18 Dec Starts +++++++++++++++++++ -->
+        <!-- Facility Name + Prepared By -->
+        <div class="border rounded p-4 dark:border-gray-700">
+          <h3 class="font-semibold mb-2 text-sm">Report Information</h3>
+
+          <div class="space-y-3">
+            <!-- Facility Name -->
+            <div>
+              <label class="block text-sm">Facility Name</label>
+              <input id="settings-facility-name" type="text"
+                    placeholder="e.g., State General Hospital"
+                    class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" />
+            </div>
+
+            <!-- Prepared By -->
+            <div>
+              <label class="block text-sm">Prepared By</label>
+              <input id="settings-prepared-by" type="text"
+                    placeholder="e.g., Cathy Pacific"
+                    class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" />
+            </div>
+
+            <button id="settings-save-report-info"
+                    class="mt-2 px-4 py-2 bg-primary text-white rounded text-sm">
+              Save Report Information
+            </button>
+          </div>
+        </div>
+        <!-- ++++++++++++ 18 Dec Ends +++++++++++++++++++ -->
+
+
+        <!-- Master PIN info -->
+        <div class="border rounded p-4 bg-yellow-50 dark:bg-yellow-900 border-yellow-200 dark:border-yellow-700">
+          <h3 class="font-semibold mb-2 text-sm">Master PIN</h3>
+          <p class="text-xs text-gray-700 dark:text-gray-100">
+            The master PIN is a fixed override code that only the administrator should know.
+            It can be used when a user forgets their normal PIN.
+            For security, the master PIN is not shown inside the app interface.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- About section -->
+    <section id="section-about" class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-6 rounded shadow hidden">
+      <h2 class="text-xl font-semibold mb-4">About This App</h2>
+      <p class="text-sm leading-relaxed mb-3">
+        This Drugs Inventory Management System helps healthcare facilities track drug stock,
+        dispensing activities, and departmental usage.
+      </p>
+      <p class="text-sm leading-relaxed mb-3">
+        The app works offline using IndexedDB and can be installed as a Progressive Web App (PWA)
+        on both mobile phones and desktop computers.
+      </p>
+      <p class="text-sm leading-relaxed mb-3">
+        It is designed to improve accountability, reduce stock-out risks, and support quick reporting.
+      </p>
+      <p class="text-sm leading-relaxed mb-1">
+        Version: <strong>1.1.0</strong> (Dark Mode + Backup/Restore)
+      </p>
+      <p class="text-sm leading-relaxed">
+        Developed and customized by Arc. Harry (H-Digital Solutions), with assistance from Pharm. C.
+      </p>
+    </section>
+
+    <!-- Help section -->
+    <!-- <section id="section-help" class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-6 rounded shadow hidden">
+      <h2 class="text-xl font-semibold mb-4">Help & User Guide</h2>
+
+      <h3 class="font-semibold mt-4 mb-1">1. Adding Drugs to Inventory</h3>
+      <p class="text-sm mb-3">
+        Go to the <strong>Inventory</strong> tab. Fill in the drug name, classification, unit,
+        quantity and critical level, then click <strong>Save / Add</strong>.
+      </p>
+
+      <h3 class="font-semibold mt-4 mb-1">2. Updating Existing Drugs</h3>
+      <p class="text-sm mb-3">
+        In the inventory table, click <strong>Edit</strong> next to a drug. Adjust the details and
+        click <strong>Save / Add</strong> to update.
+      </p>
+
+      <h3 class="font-semibold mt-4 mb-1">3. Increasing Stock</h3>
+      <p class="text-sm mb-3">
+        In the inventory table, click <strong>Add Stock</strong> for the desired drug.
+        Enter the quantity to add and the authorization PIN. Confirm when prompted.
+      </p>
+
+      <h3 class="font-semibold mt-4 mb-1">4. Dispensing Drugs</h3>
+      <p class="text-sm mb-3">
+        Go to the <strong>Dispense</strong> tab. Select a drug, choose or type the department,
+        enter the quantity, and click <strong>Dispense</strong>.
+        Stock is automatically reduced, and a dispense record is created.
+      </p>
+
+      <h3 class="font-semibold mt-4 mb-1">5. Viewing Reports</h3>
+      <p class="text-sm mb-3">
+        Go to the <strong>Reports</strong> tab. Choose a period (Today, This week, This month, or Custom),
+        optionally filter by department, and review the table and summary cards.
+      </p>
+
+      <h3 class="font-semibold mt-4 mb-1">6. Exporting Reports</h3>
+      <p class="text-sm mb-3">
+        In the Reports tab, use <strong>Export to PDF</strong> to download a PDF copy or
+        <strong>Export to Excel (CSV)</strong> to open the data in Excel.
+      </p>
+
+      <h3 class="font-semibold mt-4 mb-1">7. Changing the Increment PIN</h3>
+      <p class="text-sm mb-3">
+        Go to the <strong>Settings</strong> tab. Enter your current PIN or the master PIN,
+        then set and confirm the new PIN and click <strong>Save New PIN</strong>.
+      </p>
+
+      <h3 class="font-semibold mt-4 mb-1">8. Backup & Restore</h3>
+      <p class="text-sm mb-3">
+        In the <strong>Settings</strong> tab, use <strong>Download Backup File</strong> to save all data to a JSON file.
+        To restore, choose a file and select either <strong>Full Restore</strong> (overwrites current data) or
+        <strong>Merge Restore</strong> (adds missing items only).
+      </p>
+
+      <h3 class="font-semibold mt-4 mb-1">9. Dark Mode</h3>
+      <p class="text-sm mb-3">
+        Use the sun/moon button in the top-right corner of the app to switch between light and dark mode.
+        Your choice is remembered on this device.
+      </p>
+
+      <h3 class="font-semibold mt-4 mb-1">10. Troubleshooting</h3>
+      <p class="text-sm mb-1">
+        - If data disappears, make sure you are using the same browser and device.
+      </p>
+      <p class="text-sm mb-1">
+        - If the app doesn't install, ensure you opened it over a network (not just a file path),
+        e.g., via a simple local server.
+      </p>
+      <p class="text-sm">
+        - If something still doesn’t work, contact your administrator for support.
+      </p>
+    </section>
+  </div> -->
+
+  <!-- Help section -->
+<section id="section-help" class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-6 rounded shadow hidden">
+  <h2 class="text-xl font-semibold mb-4">Help & User Guide</h2>
+
+  <h3 class="font-semibold mt-4 mb-1">1. Adding Drugs to Inventory</h3>
+  <p class="text-sm mb-3">
+    Go to the <strong>Inventory</strong> tab. Fill in the drug name, classification, unit,
+    quantity and critical level, then click <strong>Save / Add</strong>.
+  </p>
+
+  <h3 class="font-semibold mt-4 mb-1">2. Updating Existing Drugs</h3>
+  <p class="text-sm mb-3">
+    In the inventory table, click <strong>Edit</strong> next to a drug. Adjust the details and
+    click <strong>Save / Add</strong> to update.
+  </p>
+
+  <h3 class="font-semibold mt-4 mb-1">3. Increasing Stock</h3>
+  <p class="text-sm mb-3">
+    In the inventory table, click <strong>Add Stock</strong> for the desired drug.
+    Enter the quantity to add and the authorization PIN. Confirm when prompted.
+  </p>
+
+  <h3 class="font-semibold mt-4 mb-1">4. Dispensing Drugs</h3>
+  <p class="text-sm mb-3">
+    Go to the <strong>Dispense</strong> tab. Select a drug, choose or type the department,
+    enter the quantity, and click <strong>Dispense</strong>.
+    Stock is automatically reduced, and a dispense record is created.
+  </p>
+
+  <h3 class="font-semibold mt-4 mb-1">5. Viewing Reports</h3>
+  <p class="text-sm mb-3">
+    Go to the <strong>Reports</strong> tab. Choose a period (Today, This week, This month, or Custom),
+    optionally filter by department, and review the table and summary cards.
+  </p>
+
+  <h3 class="font-semibold mt-4 mb-1">5. Search and Filter for Inventory</h3>
+  <p class="text-sm mb-3"> The inventory table includes a powerful search and filter panel at the top to help you quickly find the drugs you need. </p>
+  <ul class="list-disc list-inside text-sm mb-3">
+    <li> <strong>Search by Name:</strong> Type part of a drug’s name into the search box to instantly narrow results. </li>
+    <li> <strong>Search by Classification:</strong> Enter a drug classification (e.g., Antibiotic, Analgesic) to filter the list by category. </li>
+    <li> <strong>Status Filter Dropdown:</strong> Use the dropdown menu to filter by stock status: 
+      <ul class="list-disc list-inside ml-6"> 
+        <li><strong>All:</strong> Show every drug in the inventory.</li> 
+        <li><strong>Ok:</strong> Show only drugs with safe stock levels above their critical threshold.</li> 
+        <li><strong>Out:</strong> Show only drugs that are completely out of stock.</li> 
+        <li><strong>Critical Only:</strong> Show only drugs at or below their critical level (but not out of stock).</li> 
+        <li><strong>Critical + Ok:</strong> Show both critical and safe stock drugs together.</li> 
+        <li><strong>Critical + Out:</strong> Show both critical and out-of-stock drugs together.</li> 
+        <li><strong>Expired:</strong> Show only drugs whose expiry date has passed.</li> 
+      </ul> 
+    </li> 
+  </ul> 
+  <p class="text-sm"> You can combine the name search, classification search, 
+    and status filter to refine results further. 
+    For example, searching for “Paracetamol” with the filter set to “Critical Only” 
+    will show only Paracetamol entries that are at or below their critical level. </p>
+
+<h4 class="font-semibold mt-2 mb-1">Example</h4>
+<p class="text-sm mb-3">
+  Suppose your inventory contains four drugs: Paracetamol, Amoxicillin, Ibuprofen, and Aspirin (expired). 
+  Here’s how the table looks when different filters are applied:
+</p>
+
+<table class="table-auto border-collapse border border-gray-300 text-sm mb-3">
+  <thead class="bg-gray-500">
+    <tr>
+      <th class="border px-2 py-1">Name</th>
+      <th class="border px-2 py-1">Classification</th>
+      <th class="border px-2 py-1">Quantity</th>
+      <th class="border px-2 py-1">Critical Level</th>
+      <th class="border px-2 py-1">Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="border px-2 py-1">Paracetamol</td>
+      <td class="border px-2 py-1">Analgesic</td>
+      <td class="border px-2 py-1">0</td>
+      <td class="border px-2 py-1">10</td>
+      <td class="border px-2 py-1 text-red-600 font-semibold">OS</td>
+    </tr>
+    <tr>
+      <td class="border px-2 py-1">Amoxicillin</td>
+      <td class="border px-2 py-1">Antibiotic</td>
+      <td class="border px-2 py-1">5</td>
+      <td class="border px-2 py-1">10</td>
+      <td class="border px-2 py-1 text-orange-500 font-semibold">Critical</td>
+    </tr>
+    <tr>
+      <td class="border px-2 py-1">Ibuprofen</td>
+      <td class="border px-2 py-1">Analgesic</td>
+      <td class="border px-2 py-1">20</td>
+      <td class="border px-2 py-1">10</td>
+      <td class="border px-2 py-1 text-green-600 font-semibold">Ok</td>
+    </tr>
+    <tr>
+      <td class="border px-2 py-1">Aspirin</td>
+      <td class="border px-2 py-1">Analgesic</td>
+      <td class="border px-2 py-1">15</td>
+      <td class="border px-2 py-1">10</td>
+      <td class="border px-2 py-1 text-red-600 font-semibold">Expired</td>
+    </tr>
+  </tbody>
+</table>
+
+<p class="text-sm">
+  - If you select <strong>Out</strong>, only Paracetamol will appear.<br>
+  - If you select <strong>Critical Only</strong>, only Amoxicillin will appear.<br>
+  - If you select <strong>Critical + Ok</strong>, both Amoxicillin and Ibuprofen will appear.<br>
+  - If you select <strong>Expired</strong>, only Aspirin will appear.<br>
+  - If you select <strong>All</strong>, all four drugs will be shown.
+</p>
+
+
+<h4 class="font-semibold mt-2 mb-1">Compact Examples</h4>
+<p class="text-sm mb-3">
+  Each filter option changes which drugs appear in the inventory table. Here are simplified examples:
+</p>
+
+<!-- All -->
+<p class="text-sm mb-1"><strong>All:</strong> Shows every drug.</p>
+<table class="table-auto border-collapse border border-gray-300 text-xs mb-3">
+  <tr><td class="border px-2 py-1">Paracetamol</td><td class="border px-2 py-1 text-red-600 font-semibold">OS</td></tr>
+  <tr><td class="border px-2 py-1">Amoxicillin</td><td class="border px-2 py-1 text-orange-500 font-semibold">Critical</td></tr>
+  <tr><td class="border px-2 py-1">Ibuprofen</td><td class="border px-2 py-1 text-green-600 font-semibold">Ok</td></tr>
+</table>
+
+<!-- Out -->
+<p class="text-sm mb-1"><strong>Out:</strong> Only drugs with zero stock.</p>
+<table class="table-auto border-collapse border border-gray-300 text-xs mb-3">
+  <tr><td class="border px-2 py-1">Paracetamol</td><td class="border px-2 py-1 text-red-600 font-semibold">OS</td></tr>
+</table>
+
+<!-- Critical Only -->
+<p class="text-sm mb-1"><strong>Critical Only:</strong> Only drugs at or below their critical level.</p>
+<table class="table-auto border-collapse border border-gray-300 text-xs mb-3">
+  <tr><td class="border px-2 py-1">Amoxicillin</td><td class="border px-2 py-1 text-orange-500 font-semibold">Critical</td></tr>
+</table>
+
+<!-- Ok -->
+<p class="text-sm mb-1"><strong>Ok:</strong> Only drugs with safe stock above critical level.</p>
+<table class="table-auto border-collapse border border-gray-300 text-xs mb-3">
+  <tr><td class="border px-2 py-1">Ibuprofen</td><td class="border px-2 py-1 text-green-600 font-semibold">Ok</td></tr>
+</table>
+
+<!-- Critical + Ok -->
+<p class="text-sm mb-1"><strong>Critical + Ok:</strong> Shows both critical and safe stock drugs.</p>
+<table class="table-auto border-collapse border border-gray-300 text-xs mb-3">
+  <tr><td class="border px-2 py-1">Amoxicillin</td><td class="border px-2 py-1 text-orange-500 font-semibold">Critical</td></tr>
+  <tr><td class="border px-2 py-1">Ibuprofen</td><td class="border px-2 py-1 text-green-600 font-semibold">Ok</td></tr>
+</table>
+
+<!-- Critical + Out -->
+<p class="text-sm mb-1"><strong>Critical + Out:</strong> Shows both critical and out-of-stock drugs.</p>
+<table class="table-auto border-collapse border border-gray-300 text-xs mb-3">
+  <tr><td class="border px-2 py-1">Paracetamol</td><td class="border px-2 py-1 text-red-600 font-semibold">OS</td></tr>
+  <tr><td class="border px-2 py-1">Amoxicillin</td><td class="border px-2 py-1 text-orange-500 font-semibold">Critical</td></tr>
+</table>
+
+
+
+  <h3 class="font-semibold mt-4 mb-1">6. Exporting and Managing Reports</h3>
+  <p class="text-sm mb-3">
+  In the Reports tab, you can refine, organize, and export your data with several tools:
+  </p>
+  <ul class="list-disc list-inside text-sm mb-3">
+    <li>
+    <strong>Filter Controls:</strong> Choose a reporting period (Today, This Week, This Month, or Custom Range), set specific start and end dates, and filter by department to narrow down the data shown.
+    </li>
+    <li>
+    <strong>Sorting:</strong> Use the <em>Sort table by</em> dropdown to reorder the report table by different criteria:
+      <ul class="list-disc list-inside ml-6">
+        <li><strong>Date (Newest → Oldest):</strong> Show most recent dispenses first.</li>
+        <li><strong>Date (Oldest → Newest):</strong> Show earliest dispenses first.</li>
+        <li><strong>Drug A–Z:</strong> Sort drugs alphabetically by name.</li>
+        <li><strong>Drug Z–A:</strong> Sort drugs in reverse alphabetical order.</li>
+        <li><strong>Quantity Low → High:</strong> Sort by smallest to largest quantity dispensed.</li>
+        <li><strong>Quantity High → Low:</strong> Sort by largest to smallest quantity dispensed.</li>
+        <li><strong>Department A–Z:</strong> Sort drugs alphabetically by department.</li>
+      </ul>
+    </li>
+    <li>
+    <strong>Summary Cards:</strong> At the top of the Reports tab, you’ll see summary cards showing total quantity dispensed, number of dispenses, and a per-department breakdown.
+    </li>
+    <li>
+    <strong>Export Options:</strong> Use <strong>Export to PDF</strong> to download a PDF copy of the report or <strong>Export to Excel (CSV)</strong> to open the data in Excel for further analysis.
+    </li>
+  </ul>
+  <p class="text-sm">
+  You can combine filters, sorting, and export options to generate exactly the report you need. 
+  For example, you might filter by “This Month,” sort by “Quantity High → Low,” and then export to PDF to share a monthly summary of the most dispensed drugs.
+  </p>
+
+  <!-- Illustrated Example -->
+  <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3 rounded mt-3 text-sm">
+    <p class="font-semibold mb-2">Example Scenario:</p>
+    <p class="mb-2">Suppose you want to review Paracetamol dispenses to the O & G department this week.</p>
+    <ol class="list-decimal list-inside space-y-1">
+      <li>Select <strong>This Week</strong> from the period dropdown.</li>
+      <li>Type <strong>O & G</strong> into the department filter box.</li>
+      <li>Choose <strong>Drug A–Z</strong> from the sort dropdown.</li>
+      <li>The report table will now show only Pharmacy dispenses for this week, with drugs listed alphabetically. Paracetamol entries will appear in order alongside other drugs.</li>
+      <li>Finally, click <strong>Export to PDF</strong> to download a clean, shareable copy of the report.</li>
+    </ol>
+  </div>
+
+  <h3 class="font-semibold mt-4 mb-1">9. Pagination (Rows Per Page)</h3>
+<p class="text-sm mb-3">
+  In the <strong>Reports</strong> tab, you can control how many rows appear in the
+  dispense table using the <strong>Rows per page</strong> dropdown. Select from the
+  available options (e.g., 10, 25, 50, 100) to adjust how many records are shown at once.
+  Use the <strong>Previous</strong> and <strong>Next</strong> buttons to navigate between pages.
+</p>
+
+<h3 class="font-semibold mt-4 mb-1">10. Exporting Filtered Dispense Records to PDF</h3>
+<p class="text-sm mb-3">
+  After selecting your date range, department filter, and sorting options in the
+  <strong>Reports</strong> tab, click <strong>Export Filtered Dispense PDF</strong> to generate
+  a PDF containing only the records currently shown in the table. The PDF respects all
+  filters, sorting, and pagination settings, and includes your facility name, prepared-by
+  information, and optional watermark if enabled in <strong>Settings</strong>.
+</p>
+
+<h3 class="font-semibold mt-4 mb-1">11. Dashboard Summary PDF</h3>
+<p class="text-sm mb-3">
+  To generate a high-level overview of your system activity, use the
+  <strong>Dashboard Summary PDF</strong> button in the <strong>Reports</strong> tab.
+  This PDF includes inventory statistics, dispense summaries, top drugs, and top
+  departments. It is fully text-only and formatted in the same style as other reports.
+</p>
+
+<h3 class="font-semibold mt-4 mb-1">12. Custom Range Report PDF</h3>
+<p class="text-sm mb-3">
+  For detailed reporting over any period, select your <strong>From</strong> and
+  <strong>To</strong> dates in the <strong>Reports</strong> tab, then click
+  <strong>Custom Range Report PDF</strong>. This generates a multi-page PDF containing:
+  a summary page, full inventory snapshot, all dispenses within the selected range,
+  and department usage breakdowns. Dates inside the PDF are displayed in
+  <strong>dd/mm/yyyy</strong> format.
+</p>
+
+<h3 class="font-semibold mt-4 mb-1">13. Branding Options for PDFs</h3>
+<p class="text-sm mb-3">
+  In the <strong>Settings</strong> tab, you can customize the appearance of all PDFs.
+  Enter your <strong>Facility Name</strong> and <strong>Prepared By</strong> information,
+  upload a <strong>Facility Logo</strong>, or enable the optional
+  <strong>Cathy‑DiMS watermark</strong>. You may also remove the logo or reset all
+  branding settings to default at any time.
+</p>
+
+
+
+  <h3 class="font-semibold mt-4 mb-1">7. Changing the Increment PIN</h3>
+  <p class="text-sm mb-3">
+    Go to the <strong>Settings</strong> tab. Enter your current PIN or the master PIN,
+    then set and confirm the new PIN and click <strong>Save New PIN</strong>.
+  </p>
+
+  <h3 class="font-semibold mt-4 mb-1">14. Inventory PDF</h3>
+  <p class="text-sm mb-3">
+    In the <strong>Inventory</strong> tab, you can export the full list of drugs by clicking
+    <strong>Export Inventory PDF</strong>. The PDF includes all inventory items, their
+    classifications, expiry dates, quantities, and status indicators (e.g., Out of Stock,
+    Critical Level). The report uses your facility name, prepared-by information, and
+    optional watermark if enabled in <strong>Settings</strong>.
+  </p>
+
+  <h3 class="font-semibold mt-4 mb-1">15. Dispense PDF</h3>
+  <p class="text-sm mb-3">
+    In the <strong>Dispense</strong> tab, you can export all dispense records using
+    <strong>Export Dispense PDF</strong>. This PDF includes every dispense entry along with
+    drug name, department, quantity, and classification. The export respects your branding
+    settings and displays dates in <strong>dd/mm/yyyy</strong> format.
+  </p>
+
+  <h3 class="font-semibold mt-4 mb-1">8. Backup & Restore (JSON)</h3>
+  <p class="text-sm mb-3">
+    In the <strong>Settings</strong> tab, use <strong>Download Backup File</strong> to save all data to a JSON file.
+    To restore, choose a file and select either <strong>Full Restore</strong> (overwrites current data) or
+    <strong>Merge Restore</strong> (adds missing items only).
+  </p>
+
+  <h3 class="font-semibold mt-4 mb-1">9. Import/Export Inventory (Excel/CSV)</h3>
+  <p class="text-sm mb-3">
+    In the <strong>Settings</strong> tab, use <strong>Download Inventory Excel (CSV)</strong> to export all inventory records.
+    To import, choose an Excel file saved in CSV format with the correct headings and select either <strong>Full Import</strong> (overwrite all inventory) or
+    <strong>Merge Import</strong> (add only new inventory items).
+    <br/>Note: The file must include the required header row (S/N, Name, Classification, SubClass, Expiry, PackSize, Unit, Quantity, CriticalLevel, Status).
+    Empty cells are allowed but will be treated as blank or zero.
+  </p>
+
+  <h3 class="font-semibold mt-4 mb-1">10. Import/Export Dispenses (Excel/CSV)</h3>
+  <p class="text-sm mb-3">
+    In the <strong>Settings</strong> tab, use <strong>Download Dispenses Excel (CSV)</strong> to export all dispense records.
+    To import, choose an Excel file saved in CSV format with the correct headings and select either <strong>Full Import</strong> (overwrite all dispense records) or
+    <strong>Merge Import</strong> (add only new dispense records).
+    <br/>Note: The file must include the required header row (S/N, DateDispensed, DrugName, Classification, SubClass, Expiry, DrugUnit, QuantityDispensed, Department, ApprovedBy).
+    Empty cells are allowed but will be treated as blank or zero.
+  </p>
+
+  <h3 class="font-semibold mt-4 mb-1">11. Dark Mode</h3>
+  <p class="text-sm mb-3">
+    Use the sun/moon button in the top-right corner of the app to switch between light and dark mode.
+    Your choice is remembered on this device.
+  </p>
+
+  <h3 class="font-semibold mt-4 mb-1">12. Lock App Button</h3>
+  <p class="text-sm mb-3">
+    At the bottom left corner of the app, in the footer bar, you will see a <strong>Lock App</strong> button 🔒.
+    Clicking this button will immediately lock the app and require you to re‑enter your PIN before you can continue.
+    Use this feature whenever you step away from your device to keep your data secure.
+  </p>
+
+  <h3 class="font-semibold mt-4 mb-1">16. Logo & Watermark Settings</h3>
+  <p class="text-sm mb-3">
+    In the <strong>Settings</strong> tab, under <strong>PDF Branding</strong>, you can upload a
+    custom <strong>Facility Logo</strong> to replace the default Cathy‑DiMS logo in all PDFs.
+    You may also enable the optional <strong>Cathy‑DiMS watermark</strong> for additional
+    branding. If needed, use <strong>Remove Facility Logo</strong> to revert to the default
+    logo or <strong>Reset Branding to Default</strong> to clear all branding settings at once.
+  </p>
+
+  <h3 class="font-semibold mt-4 mb-1">17. User Roles (If Enabled)</h3>
+  <p class="text-sm mb-3">
+    If your installation includes user roles, access to certain features may vary. For
+    example, administrators may have full access to inventory management, dispense
+    operations, and settings, while standard users may be limited to viewing reports or
+    recording dispenses. Contact your system administrator if you require additional
+    permissions.
+  </p>
+
+
+
+  <h3 class="font-semibold mt-4 mb-1">18. Troubleshooting</h3>
+  <p class="text-sm mb-1">
+    - If data disappears, make sure you are using the same browser and device.
+  </p>
+  <p class="text-sm mb-1">
+    - If the app doesn't install, ensure you opened it over a network (not just a file path),
+    e.g., via a simple local server.
+  </p>
+  <p class="text-sm mb-1">
+    - If PDF exports do not show your logo or facility name, check the <strong>PDF Branding</strong>
+    section in <strong>Settings</strong> and ensure your information is saved correctly.
+  </p>
+  <p class="text-sm mb-1">
+    - If pagination controls do not respond, refresh the page and verify that your filters
+    (date range, department, sorting) are valid.
+  </p>
+  <p class="text-sm mb-1">
+    - If a PDF appears blank or incomplete, try regenerating it after adjusting your date
+    range or clearing filters.
+  </p>
+  <p class="text-sm">
+    - If something still doesn’t work, contact your administrator for support.
+  </p>
+
+   <h3 class="font-semibold mt-4 mb-1">14. Quick Reference: Excel/CSV Column Headings</h3>
+  <p class="text-sm mb-3">
+    When importing data from Excel (CSV), the file must include the correct header row.  
+    Use the tables below to confirm the required column order for Inventory and Dispenses.
+  </p>
+
+  <!-- Inventory Headers Table -->
+  <div class="overflow-x-auto mb-4">
+    <table class="min-w-full border text-xs">
+      <thead class="bg-gray-100 dark:bg-gray-700">
+        <tr>
+          <th class="border px-2 py-1">Inventory Required Headers</th>
+        </tr>
+      </thead>
+      <tbody class="flex flex-row justify-start">
+        <tr><td class="border px-2 py-1">S/N</td></tr>
+        <tr><td class="border px-2 py-1">Name</td></tr>
+        <tr><td class="border px-2 py-1">Classification</td></tr>
+        <tr><td class="border px-2 py-1">SubClass</td></tr>
+        <tr><td class="border px-2 py-1">Expiry</td></tr>
+        <tr><td class="border px-2 py-1">PackSize</td></tr>
+        <tr><td class="border px-2 py-1">Unit</td></tr>
+        <tr><td class="border px-2 py-1">Quantity</td></tr>
+        <tr><td class="border px-2 py-1">CriticalLevel</td></tr>
+        <tr><td class="border px-2 py-1">Status</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Dispenses Headers Table -->
+  <div class="overflow-x-auto mb-4">
+    <table class="min-w-full border text-xs">
+      <thead class="bg-gray-100 dark:bg-gray-700">
+        <tr>
+          <th class="border px-2 py-1">Dispenses Required Headers</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="border px-2 py-1">S/N</td></tr>
+        <tr><td class="border px-2 py-1">DateDispensed</td></tr>
+        <tr><td class="border px-2 py-1">DrugName</td></tr>
+        <tr><td class="border px-2 py-1">Classification</td></tr>
+        <tr><td class="border px-2 py-1">SubClass</td></tr>
+        <tr><td class="border px-2 py-1">Expiry</td></tr>
+        <tr><td class="border px-2 py-1">DrugUnit</td></tr>
+        <tr><td class="border px-2 py-1">QuantityDispensed</td></tr>
+        <tr><td class="border px-2 py-1">Department</td></tr>
+        <tr><td class="border px-2 py-1">ApprovedBy</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="text-xs text-gray-600 dark:text-gray-300">
+    ⚠️ Important: The <strong>S/N</strong> column must be present in the file, but its values are ignored.  
+    Empty cells are allowed, but they will be treated as blank or zero depending on the field.
+  </p>
+</section>
+
+
+<!-- Increment stock modal -->
+<div id="increment-modal"
+     class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-5 rounded shadow max-w-sm w-full border-2 border-green-600">
+    <h3 class="text-lg font-semibold mb-2 text-green-600">Confirm Stock Increment</h3>
+    <p class="text-sm mb-2">
+      You are about to increase stock for:
+      <span id="modal-drug-name" class="font-semibold"></span>
+    </p>
+    <p class="text-xs text-green-600 mb-4">
+      Please confirm quantity and enter the authorization code. This action cannot be undone.
+    </p>
+
+    <label class="block text-sm mb-1">Quantity to Add</label>
+    <input id="increment-qty" type="number" min="1"
+           class="border rounded w-full px-2 py-1 mb-3 dark:bg-gray-900 dark:border-gray-700" />
+
+    <label class="block text-sm mb-1">Authorization Code</label>
+    <input id="increment-pin" type="password"
+           class="border rounded w-full px-2 py-1 mb-3 dark:bg-gray-900 dark:border-gray-700" />
+
+    <div class="flex justify-end gap-2">
+      <button id="increment-cancel" class="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-sm">
+        Cancel
+      </button>
+      <button id="increment-confirm" class="px-3 py-1 bg-green-600 text-white rounded text-sm">
+        Confirm
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete entry modal -->
+<div id="delete-modal"
+     class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-5 rounded shadow max-w-sm w-full border-2 border-red-600">
+    <h3 class="text-lg font-semibold mb-2 flex items-center gap-2 text-red-600">
+      <!-- Warning icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01M12 5a7 7 0 00-7 7v5h14v-5a7 7 0 00-7-7z" />
+      </svg>
+      Confirm Delete
+    </h3>
+    <p class="text-sm mb-2">
+      You are about to delete:
+      <span id="delete-drug-name" class="font-semibold"></span>
+    </p>
+    <p class="text-xs text-red-600 mb-4">
+      This action cannot be undone. Please enter the authorization code to confirm.
+    </p>
+
+    <label class="block text-sm mb-1">Authorization Code</label>
+    <input id="delete-pin" type="password"
+           class="border rounded w-full px-2 py-1 mb-3 dark:bg-gray-900 dark:border-gray-700" />
+
+    <div class="flex justify-end gap-2">
+      <button id="delete-cancel" class="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-sm">
+        Cancel
+      </button>
+      <button id="delete-confirm" class="px-3 py-1 bg-red-600 text-white rounded text-sm">
+        Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit drug modal -->
+<div id="edit-modal"
+     class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-5 rounded shadow max-w-sm w-full border-2 border-purple-600">
+    <h3 class="text-lg font-semibold mb-2 flex items-center gap-2 text-purple-600">
+      <!-- Warning icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01M12 5a7 7 0 00-7 7v5h14v-5a7 7 0 00-7-7z" />
+      </svg>
+      Confirm Edit
+    </h3>
+    <p class="text-sm mb-2">
+      You are about to edit details for:
+      <span id="edit-modal-drug-name" class="font-semibold"></span>
+    </p>
+    <p class="text-xs text-purple-600 mb-4">
+      Please confirm this action and enter the authorization code. Editing will overwrite existing data.
+    </p>
+
+    <label class="block text-sm mb-1">Authorization Code</label>
+    <input id="edit-pin" type="password"
+           class="border rounded w-full px-2 py-1 mb-3 dark:bg-gray-900 dark:border-gray-700" />
+
+    <div class="flex justify-end gap-2">
+      <button id="edit-cancel" class="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-sm">
+        Cancel
+      </button>
+      <button id="edit-confirm" class="px-3 py-1 bg-purple-600 text-white rounded text-sm">
+        Confirm
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit confirmation modal -->
+<div id="edit-confirm-modal"
+     class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-5 rounded shadow max-w-sm w-full border-2 border-purple-600">
+    <h3 class="text-lg font-semibold mb-2 flex items-center gap-2 text-purple-600">
+      <!-- Warning icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01M12 5a7 7 0 00-7 7v5h14v-5a7 7 0 00-7-7z" />
+      </svg>
+      Confirm Overwrite
+    </h3>
+    <p class="text-sm mb-2">
+      You are about to overwrite the existing entry for:
+      <span id="edit-confirm-drug-name" class="font-semibold"></span>
+    </p>
+    <p class="text-xs text-purple-600 mb-4">
+      This action cannot be undone. Please confirm to continue.
+    </p>
+
+    <div class="flex justify-end gap-2">
+      <button id="edit-confirm-cancel" class="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-sm">
+        Cancel
+      </button>
+      <button id="edit-confirm-ok" class="px-3 py-1 bg-purple-600 text-white rounded text-sm">
+        Confirm
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Success modal for Edit -->
+<div id="success-edit-modal"
+     class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-5 rounded shadow max-w-sm w-full border-2 border-green-600">
+    <h3 class="text-lg font-semibold mb-2 flex items-center gap-2 text-green-600">
+      <!-- Check icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M5 13l4 4L19 7" />
+      </svg>
+      Edit Successful
+    </h3>
+    <p class="text-sm mb-4">
+      The drug entry has been successfully updated.
+    </p>
+    <div class="flex justify-end">
+      <button id="success-edit-ok" class="px-3 py-1 bg-green-600 text-white rounded text-sm">
+        OK
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Success modal for Add Stock -->
+<div id="success-increment-modal"
+     class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-5 rounded shadow max-w-sm w-full border-2 border-green-600">
+    <h3 class="text-lg font-semibold mb-2 flex items-center gap-2 text-green-600">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M5 13l4 4L19 7" />
+      </svg>
+      Stock Added
+    </h3>
+    <p class="text-sm mb-4">
+      The stock quantity has been successfully updated.
+    </p>
+    <div class="flex justify-end">
+      <button id="success-increment-ok" class="px-3 py-1 bg-green-600 text-white rounded text-sm">
+        OK
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Success modal for Delete -->
+<div id="success-delete-modal"
+     class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-5 rounded shadow max-w-sm w-full border-2 border-green-600">
+    <h3 class="text-lg font-semibold mb-2 flex items-center gap-2 text-green-600">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M5 13l4 4L19 7" />
+      </svg>
+      Entry Deleted
+    </h3>
+    <p class="text-sm mb-4">
+      The drug entry has been successfully removed.
+    </p>
+    <div class="flex justify-end">
+      <button id="success-delete-ok" class="px-3 py-1 bg-green-600 text-white rounded text-sm">
+        OK
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- <footer class="scroll-footer">
+  <div class="scroll-text">Powered by H‑Solutions</div>
+</footer> -->
+
+<!-- <footer class="scroll-footer sticky bottom-0 left-0 w-full 
+               bg-gray-800 bg-opacity-60 backdrop-blur-sm 
+               text-gray-50 py-2 overflow-hidden z-[9999]">
+  <div class="scroll-text font-bold text-sm whitespace-nowrap pl-full animate-scroll">
+    Powered by H‑Solutions
+  </div>
+</footer> -->
+
+<footer class="scroll-footer sticky bottom-0 left-0 w-full 
+               bg-gray-800 bg-opacity-60 backdrop-blur-sm 
+               text-gray-50 py-2 overflow-hidden z-[999] flex items-center justify-between px-4">
+  <!-- Left side: Lock App button -->
+  <button id="lock-app-btn"
+          class="flex items-center gap-1 text-sm px-2 py-1 rounded border border-gray-600 hover:bg-gray-700 transition-colors z-[9999]">
+    🔒
+  </button>
+
+  <!-- Right side: scrolling text -->
+  <div class="scroll-text font-bold text-sm whitespace-nowrap pl-full animate-scroll">
+    Powered by H‑Solutions
+  </div>
+</footer>
+
+
+
+
+
+  <script src="app.js"></script>
+
+  <script>
+function printSection(id) {
+  const section = document.getElementById(id);
+  if (!section) {
+    alert("Section not found: " + id);
+    return;
+  }
+  // Add printable class
+  section.classList.add("printable");
+  // Trigger print dialog
+  window.print();
+  // Remove printable class after printing
+  section.classList.remove("printable");
+}
+
+// /* ============================================================
+//    WELCOME MODAL LOGIC Begins
+//    ============================================================ */
+
+// // Toggle this flag: true = PIN required, false = bypass PIN (development mode)
+// const REQUIRE_PIN = false;
+
+// function initWelcomeModal() {
+//   const modal = document.getElementById("welcome-modal");
+//   const pinInput = document.getElementById("welcome-pin");
+//   const submitBtn = document.getElementById("welcome-submit");
+
+//   if (!modal || !pinInput || !submitBtn) {
+//     console.error("Welcome modal elements not found in DOM.");
+//     return;
+//   }
+
+//   // 🟢 Lock background scrolling while modal is visible
+//   document.body.style.overflow = "hidden";
+
+//   // 🟢 Add fade-in animation class when modal loads
+//   modal.classList.add("fade-in");
+
+//   // 🟢 Handle Enter button click
+//   submitBtn.addEventListener("click", () => {
+//     // 🟢 Development mode: skip PIN check
+//     if (!REQUIRE_PIN) {
+//       modal.classList.remove("fade-in");
+//       modal.classList.add("fade-out");
+
+//       // Wait for fade-out animation to finish before hiding
+//       modal.addEventListener("animationend", () => {
+//         modal.classList.add("hidden");
+//         document.body.style.overflow = ""; // restore scrolling
+//       }, { once: true });
+
+//       return;
+//     }
+
+//     // 🟢 Normal PIN check
+//     const enteredPin = pinInput.value.trim();
+//     const currentPin = getCurrentPin(); // reuse your existing PIN logic
+
+//     if (enteredPin === currentPin || enteredPin === MASTER_PIN) {
+//       modal.classList.remove("fade-in");
+//       modal.classList.add("fade-out");
+
+//       modal.addEventListener("animationend", () => {
+//         modal.classList.add("hidden");
+//         document.body.style.overflow = ""; // restore scrolling
+//       }, { once: true });
+//     } else {
+//       alert("Incorrect PIN. Please try again.");
+//     }
+//   });
+// }
+
+// // Initialize welcome modal when DOM is ready
+// document.addEventListener("DOMContentLoaded", initWelcomeModal);
+
+// /* ============================================================
+//    WELCOME MODAL LOGIC Ends
+//    ============================================================ */
+
+/* ============================================================
+   WELCOME MODAL LOGIC Begins
+   ============================================================ */
+
+// Toggle this flag: true = PIN required, false = bypass PIN (development mode)
+const REQUIRE_PIN = false;
+
+// Inactivity timeout (milliseconds) → auto-lock after 15 minutes
+const INACTIVITY_TIMEOUT = 900000;
+
+let inactivityTimer;
+
+function initWelcomeModal() {
+  const modal = document.getElementById("welcome-modal");
+  const pinInput = document.getElementById("welcome-pin");
+  const submitBtn = document.getElementById("welcome-submit");
+  const lockBtn = document.getElementById("lock-app-btn"); // 🟢 Lock App button in footer
+
+  if (!modal || !pinInput || !submitBtn) {
+    console.error("Welcome modal elements not found in DOM.");
+    return;
+  }
+
+  // 🟢 Lock background scrolling while modal is visible
+  document.body.style.overflow = "hidden";
+
+  // 🟢 Add fade-in animation class when modal loads
+  modal.classList.add("fade-in");
+
+  // 🟢 Handle Enter button click
+  submitBtn.addEventListener("click", () => {
+    // 🟢 Development mode: skip PIN check
+    if (!REQUIRE_PIN) {
+      triggerFadeOut(modal);
+      return;
+    }
+
+    // 🟢 Normal PIN check
+    const enteredPin = pinInput.value.trim();
+    const currentPin = getCurrentPin(); // reuse your existing PIN logic
+
+    if (enteredPin === currentPin || enteredPin === MASTER_PIN) {
+      triggerFadeOut(modal);
+    } else {
+      alert("Incorrect PIN. Please try again.");
+    }
+  });
+
+  // 🟢 Manual lock button in footer
+  if (lockBtn) {
+    lockBtn.addEventListener("click", () => {
+      showModal(modal);
+    });
+  }
+
+  // 🟢 Auto-lock after inactivity
+  function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+      showModal(modal);
+    }, INACTIVITY_TIMEOUT);
+  }
+
+  ["mousemove", "keydown", "click", "touchstart"].forEach(evt => {
+    document.addEventListener(evt, resetInactivityTimer);
+  });
+  resetInactivityTimer(); // start timer on load
+
+  // 🟢 Shortcut key trigger (Ctrl+L)
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && e.key.toLowerCase() === "l") {
+      showModal(modal);
+    }
+  });
+}
+
+// 🟢 Helper: fade-out animation then hide modal
+function triggerFadeOut(modal) {
+  modal.classList.remove("fade-in");
+  modal.classList.add("fade-out");
+
+  modal.addEventListener("animationend", () => {
+    modal.classList.add("hidden");
+    document.body.style.overflow = ""; // restore scrolling
+  }, { once: true });
+}
+
+// 🟢 Helper: show modal again (lock screen)
+function showModal(modal) {
+  modal.classList.remove("hidden", "fade-out");
+  modal.classList.add("fade-in");
+  document.body.style.overflow = "hidden";
+  document.getElementById("welcome-pin").value = ""; // clear PIN field
+}
+
+// Initialize welcome modal when DOM is ready
+document.addEventListener("DOMContentLoaded", initWelcomeModal);
+
+/* ============================================================
+   WELCOME MODAL LOGIC Ends
+   ============================================================ */
+
+
+
+
+</script>
+
+</body>
+</html>
