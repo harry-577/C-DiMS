@@ -242,6 +242,112 @@ function getRecentDispenses(limit = 20) {
 }
 
 /* ============================================================
+   DISPENSE DELETE LOGIC (with Authorization Code)
+   ============================================================ */
+function initDispenseDeleteModal() {
+  // 🟢 Grab modal + elements by their unique IDs (specific to dispense modal)
+  const modal = document.getElementById("dispense-delete-modal");
+  const cancelBtn = document.getElementById("dispense-delete-cancel");
+  const confirmBtn = document.getElementById("dispense-delete-confirm");
+  const pinInput = document.getElementById("dispense-delete-pin");
+  const drugNameSpan = document.getElementById("dispense-delete-drug-name");
+
+  // 🟢 Track which record is being targeted
+  let targetId = null;
+  let targetDrugName = "";
+
+  /* ============================================================
+     LISTEN FOR DELETE BUTTON CLICKS IN TABLE ROWS
+     === */
+  document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("delete-dispense-btn")) {
+      // Get the record ID and drug name from the button’s data attributes
+      targetId = Number(e.target.dataset.id);
+      targetDrugName = e.target.dataset.name || "";
+
+      // Show the drug name in the modal
+      drugNameSpan.textContent = targetDrugName;
+
+      // Clear any previous PIN input
+      pinInput.value = "";
+
+      // Show the modal
+      modal.classList.remove("hidden");
+    }
+  });
+
+  /* ============================================================
+     CANCEL BUTTON HANDLER
+     ==== */
+  cancelBtn.addEventListener("click", () => {
+    // Hide modal
+    modal.classList.add("hidden");
+
+    // Reset state
+    targetId = null;
+    targetDrugName = "";
+    pinInput.value = "";
+  });
+
+  /* ============================================================
+     CONFIRM DELETE HANDLER (requires PIN)
+     ==== */
+  confirmBtn.addEventListener("click", async () => {
+    const enteredPin = pinInput.value.trim();
+
+    // Replace getCurrentPin() with your actual PIN retrieval logic
+    const existingPin = getCurrentPin();
+    const MASTER_PIN = "1234"; // define globally or replace with your master PIN
+
+    // 🟢 Validate PIN
+    if (!enteredPin) {
+      alert("Please enter the authorization code.");
+      return;
+    }
+    if (!(enteredPin === existingPin || enteredPin === MASTER_PIN)) {
+      alert("Authorization code is incorrect.");
+      return;
+    }
+
+    // 🟢 Perform deletion if PIN is valid
+    if (targetId) {
+      await deleteDispense(targetId);      // delete from IndexedDB
+      await refreshDispenseTable();        // refresh table
+      modal.classList.add("hidden");       // hide modal
+      pinInput.value = "";                 // clear PIN after success
+
+      // Show success modal (reuse inventory’s success modal)
+      document.getElementById("success-delete-modal").classList.remove("hidden");
+    }
+  });
+}
+
+/* ============================================================
+   DELETE DISPENSE RECORD HELPER
+   ============================================================ */
+async function deleteDispense(id) {
+  const tx = db.transaction("dispenses", "readwrite");
+  const store = tx.objectStore("dispenses");
+  await store.delete(id);
+}
+
+/* ============================================================
+   SUCCESS DELETE MODAL HANDLER
+   ============================================================ */
+function initSuccessDeleteModal() {
+  const successModal = document.getElementById("success-delete-modal");
+  const okBtn = document.getElementById("success-delete-ok");
+
+  if (successModal && okBtn) {
+    okBtn.addEventListener("click", () => {
+      successModal.classList.add("hidden");
+    });
+  }
+}
+
+
+
+/* ============================================================
    TAB NAVIGATION
    ============================================================ */
 function initTabs() {
@@ -1828,7 +1934,7 @@ function buildDispensePageNumbers() {
   /* ============================================================
      LEFT ELLIPSIS (if needed)
      ============================================================ */
-  if (current > 4) {
+  if (current > 2) {
     container.appendChild(createEllipsis());
   }
 
@@ -1845,7 +1951,7 @@ function buildDispensePageNumbers() {
   /* ============================================================
      RIGHT ELLIPSIS (if needed)
      ============================================================ */
-  if (current < total - 3) {
+  if (current < total - 1) {
     container.appendChild(createEllipsis());
   }
 
@@ -1909,6 +2015,13 @@ async function initDispense() {
   // Load dropdown + table
   await refreshDispenseDrugOptions();
   await refreshDispenseTable();
+
+  // 🟢 Initialize delete modal
+  initDispenseDeleteModal();
+
+  // 🟢 Initialize success modal OK handler
+  initSuccessDeleteModal();
+
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     /* ============================================================
@@ -2032,8 +2145,8 @@ async function refreshDispenseTable() {
   const tbody = document.getElementById("dispense-table-body");
   tbody.innerHTML = "";
 
-  // Fetch last 30 dispense records
-  let records = await getRecentDispenses(30);
+  // Fetch last 100 dispense records
+  let records = await getRecentDispenses(100);
 
   // Alphabetical by drug name
   records.sort((a, b) => a.drugName.localeCompare(b.drugName));
@@ -2118,6 +2231,14 @@ async function refreshDispenseTable() {
       <td class="px-2 py-1">${r.quantityDispensed || "—"}</td>
       <td class="px-2 py-1">${r.department || "—"}</td>
       <td class="px-2 py-1">${r.approvedBy || "—"}</td>
+      <!-- 🟢 New Delete button -->
+      <td class="px-2 py-1">
+        <button class="delete-dispense-btn px-2 py-1 bg-red-600 text-white rounded text-xs"
+                data-id="${r.id}"
+                data-name="${r.drugName || ''}">
+          Delete
+        </button>
+      </td>
     `;
 
     tbody.appendChild(tr);
@@ -2136,6 +2257,44 @@ async function refreshDispenseTable() {
     section.scrollIntoView({ behavior: "smooth" });
   }
 }
+
+/* ============================================================
+   DISPENSE DELETE LOGIC
+   ============================================================ */
+// function initDispenseDeleteModal() {
+//   const modal = document.getElementById("dispense-delete-modal");
+//   const cancelBtn = document.getElementById("dispense-delete-cancel");
+//   const confirmBtn = document.getElementById("dispense-delete-confirm");
+
+//   let targetId = null;
+
+//   // 🟢 Listen for delete button clicks
+//   document.addEventListener("click", (e) => {
+//     if (e.target.classList.contains("delete-dispense-btn")) {
+//       targetId = Number(e.target.dataset.id);
+//       modal.classList.remove("hidden");
+//     }
+//   });
+
+//   // 🟢 Cancel button
+//   cancelBtn.addEventListener("click", () => {
+//     modal.classList.add("hidden");
+//     targetId = null;
+//   });
+
+//   // 🟢 Confirm delete
+//   confirmBtn.addEventListener("click", async () => {
+//     if (targetId) {
+//       await deleteDispense(targetId); // you’ll need to implement deleteDispense in IndexedDB
+//       await refreshDispenseTable();
+//       modal.classList.add("hidden");
+
+//       // Show success modal (reuse inventory’s success modal)
+//       document.getElementById("success-delete-modal").classList.remove("hidden");
+//     }
+//   });
+// }
+
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
@@ -2187,7 +2346,7 @@ function buildReportsPageNumbers() {
   container.appendChild(createBtn(1, current === 1));
 
   // Left ellipsis
-  if (current > 4) container.appendChild(createEllipsis());
+  if (current > 2) container.appendChild(createEllipsis());
 
   // Middle pages
   const start = Math.max(2, current - 2);
@@ -2197,7 +2356,7 @@ function buildReportsPageNumbers() {
   }
 
   // Right ellipsis
-  if (current < total - 3) container.appendChild(createEllipsis());
+  if (current < total - 1) container.appendChild(createEllipsis());
 
   // Last page
   if (total > 1) container.appendChild(createBtn(total, current === total));

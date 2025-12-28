@@ -367,13 +367,19 @@
         </select> -->
 
         <select id="status-filter" class="border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700">
-          <option value="all" selected>All</option>
+          <option value="all" selected>Filter by Status</option>
+          <option value="all">All</option>
           <option value="ok">Ok</option>
           <option value="out">Out</option>
           <option value="critical">Critical Only</option>
           <option value="critical-ok">Critical + Ok</option>
           <option value="critical-out">Critical + Out</option>
           <option value="expired">Expired</option>
+          <option value="near-expiry">Near expiry</option>
+          <option value="critical-ok">Near expiry + Expired</option>
+          <option value="critical-out">Not expired</option>
+          <option value="critical-out">Not expired + Ok</option>
+          <option value="expired">Near expiry + Ok</option>
         </select>
 
         <button id="btn-export-inventory-pdf"
@@ -542,6 +548,8 @@
               <th class="px-2 py-1">Qty</th>
               <th class="px-2 py-1">Requesting Unit</th>
               <th class="px-2 py-1">Authorized by</th>
+              <!-- 🟢 New Action column -->
+              <th class="px-2 py-1">Action</th>
             </tr>
           </thead>
           <tbody id="dispense-table-body"></tbody>
@@ -729,7 +737,7 @@
           <label for="reports-page-size" class="text-sm">Rows per page:</label>
           <select id="reports-page-size"
                   class="border rounded px-2 py-1 text-sm dark:bg-gray-900 dark:border-gray-700">
-            <option value="10">10</option>
+            <!-- <option value="10">10</option> -->
             <option value="25" selected>25</option>
             <option value="50">50</option>
             <option value="100">100</option>
@@ -1332,7 +1340,7 @@
   <h3 class="font-semibold mt-4 mb-1">9. Import/Export Inventory (Excel/CSV)</h3>
   <p class="text-sm mb-3">
     In the <strong>Settings</strong> tab, use <strong>Download Inventory Excel (CSV)</strong> to export all inventory records.
-    To import, choose an Excel file saved in CSV format with the correct headings and select either <strong>Full Import</strong> (overwrite all inventory) or
+    To import, choose an Excel file <strong>saved as CSV format </strong>with the correct headings and select either <strong>Full Import</strong> (overwrite all inventory) or
     <strong>Merge Import</strong> (add only new inventory items).
     <br/>Note: The file must include the required header row (S/N, Name, Classification, SubClass, Expiry, PackSize, Unit, Quantity, CriticalLevel, Status).
     Empty cells are allowed but will be treated as blank or zero.
@@ -1341,7 +1349,7 @@
   <h3 class="font-semibold mt-4 mb-1">10. Import/Export Dispenses (Excel/CSV)</h3>
   <p class="text-sm mb-3">
     In the <strong>Settings</strong> tab, use <strong>Download Dispenses Excel (CSV)</strong> to export all dispense records.
-    To import, choose an Excel file saved in CSV format with the correct headings and select either <strong>Full Import</strong> (overwrite all dispense records) or
+    To import, choose an Excel file <strong>saved as CSV format </strong>with the correct headings and select either <strong>Full Import</strong> (overwrite all dispense records) or
     <strong>Merge Import</strong> (add only new dispense records).
     <br/>Note: The file must include the required header row (S/N, DateDispensed, DrugName, Classification, SubClass, Expiry, DrugUnit, QuantityDispensed, Department, ApprovedBy).
     Empty cells are allowed but will be treated as blank or zero.
@@ -1399,6 +1407,11 @@
   <p class="text-sm mb-1">
     - If a PDF appears blank or incomplete, try regenerating it after adjusting your date
     range or clearing filters.
+  </p>
+  <p class="text-sm mb-1">
+    - If you have problems importing data from an Excel file, make sure that 
+    the Excel file was saved as *.csv file format, using the Excel 'save as' dropdown dialogue 
+    box (not as *.xlsx, *.xls, ...etc.).
   </p>
   <p class="text-sm">
     - If something still doesn’t work, contact your administrator for support.
@@ -1530,7 +1543,7 @@
   </div>
 </div>
 
-<!-- Edit drug modal -->
+<!-- Inventory Edit drug modal -->
 <div id="edit-modal"
      class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
   <div class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-5 rounded shadow max-w-sm w-full border-2 border-purple-600">
@@ -1565,7 +1578,7 @@
   </div>
 </div>
 
-<!-- Edit confirmation modal -->
+<!-- Inventory Edit confirmation modal -->
 <div id="edit-confirm-modal"
      class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
   <div class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-5 rounded shadow max-w-sm w-full border-2 border-purple-600">
@@ -1596,7 +1609,7 @@
   </div>
 </div>
 
-<!-- Success modal for Edit -->
+<!-- Inventory Success modal for Edit -->
 <div id="success-edit-modal"
      class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
   <div class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-5 rounded shadow max-w-sm w-full border-2 border-green-600">
@@ -1619,7 +1632,7 @@
   </div>
 </div>
 
-<!-- Success modal for Add Stock -->
+<!-- Inventory Success modal for Add Stock -->
 <div id="success-increment-modal"
      class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
   <div class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-5 rounded shadow max-w-sm w-full border-2 border-green-600">
@@ -1641,7 +1654,7 @@
   </div>
 </div>
 
-<!-- Success modal for Delete -->
+<!-- Inventory Success modal for Delete -->
 <div id="success-delete-modal"
      class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
   <div class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-5 rounded shadow max-w-sm w-full border-2 border-green-600">
@@ -1662,6 +1675,64 @@
     </div>
   </div>
 </div>
+
+<!-- Dispense Delete Confirmation Modal -->
+<!-- <div id="dispense-delete-modal"
+     class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-5 rounded shadow max-w-sm w-full border-2 border-red-600">
+    <h3 class="text-lg font-semibold mb-2 flex items-center gap-2 text-red-600">
+      ⚠️ Confirm Delete
+    </h3>
+    <p class="text-sm mb-4">
+      Are you sure you want to delete this dispense entry? This action cannot be undone.
+    </p>
+    <div class="flex justify-end gap-2">
+      <button id="dispense-delete-cancel" class="px-3 py-1 bg-gray-400 text-white rounded text-sm">
+        Cancel
+      </button>
+      <button id="dispense-delete-confirm" class="px-3 py-1 bg-red-600 text-white rounded text-sm">
+        Delete
+      </button>
+    </div>
+  </div>
+</div> -->
+
+
+<!-- Dispense Delete Modal -->
+<div id="dispense-delete-modal"
+     class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+  <div class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-5 rounded shadow max-w-sm w-full border-2 border-red-600">
+    <h3 class="text-lg font-semibold mb-2 flex items-center gap-2 text-red-600">
+      <!-- Warning icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01M12 5a7 7 0 00-7 7v5h14v-5a7 7 0 00-7-7z" />
+      </svg>
+      Confirm Delete
+    </h3>
+    <p class="text-sm mb-2">
+      You are about to delete:
+      <span id="dispense-delete-drug-name" class="font-semibold"></span>
+    </p>
+    <p class="text-xs text-red-600 mb-4">
+      This action cannot be undone. Please enter the authorization code to confirm.
+    </p>
+
+    <label class="block text-sm mb-1">Authorization Code</label>
+    <input id="dispense-delete-pin" type="password"
+           class="border rounded w-full px-2 py-1 mb-3 dark:bg-gray-900 dark:border-gray-700" />
+
+    <div class="flex justify-end gap-2">
+      <button id="dispense-delete-cancel" class="px-3 py-1 bg-gray-300 dark:bg-gray-700 rounded text-sm">
+        Cancel
+      </button>
+      <button id="dispense-delete-confirm" class="px-3 py-1 bg-red-600 text-white rounded text-sm">
+        Delete
+      </button>
+    </div>
+  </div>
+</div>
+
 
 
 <!-- <footer class="scroll-footer">
@@ -1687,7 +1758,7 @@
 
   <!-- Right side: scrolling text -->
   <div class="scroll-text font-bold text-sm whitespace-nowrap pl-full animate-scroll">
-    Powered by H‑Solutions
+    Powered by WTT-Accord
   </div>
 </footer>
 
