@@ -312,7 +312,7 @@
         <div>
   <label class="block text-sm font-medium">Unit</label>
   <select id="drug-unit" 
-          class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700">
+          class="mt-1 w-full border rounded px-2 py-1  dark:bg-gray-900 dark:border-gray-700">
     <option value="">Select unit</option>
     <option value="mcg">mcg</option>
     <option value="mg">mg</option>
@@ -386,8 +386,6 @@
         class="px-4 py-2 bg-red-600 text-white rounded mb-2">
           Export Inventory to PDF
         </button>
-
-
       </div>
 
       <!-- Inventory table -->
@@ -737,8 +735,8 @@
           <label for="reports-page-size" class="text-sm">Rows per page:</label>
           <select id="reports-page-size"
                   class="border rounded px-2 py-1 text-sm dark:bg-gray-900 dark:border-gray-700">
-            <!-- <option value="10">10</option> -->
-            <option value="25" selected>25</option>
+            <option value="10">10</option>
+            <option value="25">25</option>
             <option value="50">50</option>
             <option value="100">100</option>
           </select>
@@ -1091,127 +1089,94 @@
   </p>
 
   <h3 class="font-semibold mt-4 mb-1">5. Search and Filter for Inventory</h3>
-  <p class="text-sm mb-3"> The inventory table includes a powerful search and filter panel at the top to help you quickly find the drugs you need. </p>
-  <ul class="list-disc list-inside text-sm mb-3">
-    <li> <strong>Search by Name:</strong> Type part of a drug’s name into the search box to instantly narrow results. </li>
-    <li> <strong>Search by Classification:</strong> Enter a drug classification (e.g., Antibiotic, Analgesic) to filter the list by category. </li>
-    <li> <strong>Status Filter Dropdown:</strong> Use the dropdown menu to filter by stock status: 
-      <ul class="list-disc list-inside ml-6"> 
-        <li><strong>All:</strong> Show every drug in the inventory.</li> 
-        <li><strong>Ok:</strong> Show only drugs with safe stock levels above their critical threshold.</li> 
-        <li><strong>Out:</strong> Show only drugs that are completely out of stock.</li> 
-        <li><strong>Critical Only:</strong> Show only drugs at or below their critical level (but not out of stock).</li> 
-        <li><strong>Critical + Ok:</strong> Show both critical and safe stock drugs together.</li> 
-        <li><strong>Critical + Out:</strong> Show both critical and out-of-stock drugs together.</li> 
-        <li><strong>Expired:</strong> Show only drugs whose expiry date has passed.</li> 
-      </ul> 
-    </li> 
-  </ul> 
-  <p class="text-sm"> You can combine the name search, classification search, 
-    and status filter to refine results further. 
-    For example, searching for “Paracetamol” with the filter set to “Critical Only” 
-    will show only Paracetamol entries that are at or below their critical level. </p>
+<p class="text-sm mb-3">
+  The inventory table includes a powerful search and filter panel at the top to help you quickly find the drugs you need.
+</p>
+<ul class="list-disc list-inside text-sm mb-3">
+  <li><strong>Search by Name:</strong> Type part of a drug’s name into the search box to instantly narrow results.</li>
+  <li><strong>Search by Classification:</strong> Enter a drug classification (e.g., Antibiotic, Analgesic) to filter the list by category.</li>
+  <li><strong>Status Filter Dropdown:</strong> Use the dropdown menu to filter by stock status:
+    <ul class="list-disc list-inside ml-6">
+      <li><strong>All:</strong> Show every drug in the inventory.</li>
+      <li><strong>Ok:</strong> Show only drugs with safe stock levels above their critical threshold.</li>
+      <li><strong>Out:</strong> Show only drugs that are completely out of stock.</li>
+      <li><strong>Critical Only:</strong> Show only drugs at or below their critical level (but not out of stock).</li>
+      <li><strong>Critical + Ok:</strong> Show both critical and safe stock drugs together.</li>
+      <li><strong>Critical + Out:</strong> Show both critical and out-of-stock drugs together.</li>
+      <li><strong>Expired:</strong> Show only drugs whose expiry date has passed.</li>
+      <li><strong>Near Expiry:</strong> Show only drugs expiring within the next 5 days.</li>
+      <li><strong>Near Expiry + Expired:</strong> Show both near-expiry and expired drugs together.</li>
+      <li><strong>Not Expired:</strong> Show only drugs that are not expired.</li>
+      <li><strong>Not Expired + Ok:</strong> Show drugs that are not expired and have safe stock levels.</li>
+      <li><strong>Near Expiry + Ok:</strong> Show drugs that are near expiry or have safe stock levels.</li>
+    </ul>
+  </li>
+</ul>
+<p class="text-sm">
+  You can combine the name search, classification search, and status filter to refine results further.
+  For example, searching for “Paracetamol” with the filter set to “Critical Only” will show only Paracetamol entries that are at or below their critical level.
+</p>
 
 <h4 class="font-semibold mt-2 mb-1">Example</h4>
 <p class="text-sm mb-3">
-  Suppose your inventory contains four drugs: Paracetamol, Amoxicillin, Ibuprofen, and Aspirin (expired). 
+  Suppose your inventory contains four drugs: Paracetamol, Amoxicillin, Ibuprofen, and Aspirin (expired).
   Here’s how the table looks when different filters are applied:
 </p>
 
-<table class="table-auto border-collapse border border-gray-300 text-sm mb-3">
-  <thead class="bg-gray-500">
-    <tr>
-      <th class="border px-2 py-1">Name</th>
-      <th class="border px-2 py-1">Classification</th>
-      <th class="border px-2 py-1">Quantity</th>
-      <th class="border px-2 py-1">Critical Level</th>
-      <th class="border px-2 py-1">Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td class="border px-2 py-1">Paracetamol</td>
-      <td class="border px-2 py-1">Analgesic</td>
-      <td class="border px-2 py-1">0</td>
-      <td class="border px-2 py-1">10</td>
-      <td class="border px-2 py-1 text-red-600 font-semibold">OS</td>
-    </tr>
-    <tr>
-      <td class="border px-2 py-1">Amoxicillin</td>
-      <td class="border px-2 py-1">Antibiotic</td>
-      <td class="border px-2 py-1">5</td>
-      <td class="border px-2 py-1">10</td>
-      <td class="border px-2 py-1 text-orange-500 font-semibold">Critical</td>
-    </tr>
-    <tr>
-      <td class="border px-2 py-1">Ibuprofen</td>
-      <td class="border px-2 py-1">Analgesic</td>
-      <td class="border px-2 py-1">20</td>
-      <td class="border px-2 py-1">10</td>
-      <td class="border px-2 py-1 text-green-600 font-semibold">Ok</td>
-    </tr>
-    <tr>
-      <td class="border px-2 py-1">Aspirin</td>
-      <td class="border px-2 py-1">Analgesic</td>
-      <td class="border px-2 py-1">15</td>
-      <td class="border px-2 py-1">10</td>
-      <td class="border px-2 py-1 text-red-600 font-semibold">Expired</td>
-    </tr>
-  </tbody>
-</table>
+<!-- Keep your existing example table here -->
 
 <p class="text-sm">
   - If you select <strong>Out</strong>, only Paracetamol will appear.<br>
   - If you select <strong>Critical Only</strong>, only Amoxicillin will appear.<br>
   - If you select <strong>Critical + Ok</strong>, both Amoxicillin and Ibuprofen will appear.<br>
   - If you select <strong>Expired</strong>, only Aspirin will appear.<br>
+  - If you select <strong>Near Expiry</strong>, only drugs expiring within 5 days will appear.<br>
+  - If you select <strong>Near Expiry + Expired</strong>, both near-expiry and expired drugs will appear.<br>
+  - If you select <strong>Not Expired</strong>, all drugs except expired ones will appear.<br>
+  - If you select <strong>Not Expired + Ok</strong>, only safe stock drugs that are not expired will appear.<br>
+  - If you select <strong>Near Expiry + Ok</strong>, drugs that are near expiry or safe stock will appear.<br>
   - If you select <strong>All</strong>, all four drugs will be shown.
 </p>
-
 
 <h4 class="font-semibold mt-2 mb-1">Compact Examples</h4>
 <p class="text-sm mb-3">
   Each filter option changes which drugs appear in the inventory table. Here are simplified examples:
 </p>
 
-<!-- All -->
-<p class="text-sm mb-1"><strong>All:</strong> Shows every drug.</p>
+<!-- Keep your existing compact examples, and add new ones for the new filters -->
+
+<!-- Near Expiry -->
+<p class="text-sm mb-1"><strong>Near Expiry:</strong> Only drugs expiring within 5 days.</p>
+<table class="table-auto border-collapse border border-gray-300 text-xs mb-3">
+  <tr><td class="border px-2 py-1">Drug X</td><td class="border px-2 py-1 text-orange-500 font-semibold">Near Expiry</td></tr>
+</table>
+
+<!-- Near Expiry + Expired -->
+<p class="text-sm mb-1"><strong>Near Expiry + Expired:</strong> Shows both near-expiry and expired drugs.</p>
+<table class="table-auto border-collapse border border-gray-300 text-xs mb-3">
+  <tr><td class="border px-2 py-1">Drug X</td><td class="border px-2 py-1 text-orange-500 font-semibold">Near Expiry</td></tr>
+  <tr><td class="border px-2 py-1">Aspirin</td><td class="border px-2 py-1 text-red-600 font-semibold">Expired</td></tr>
+</table>
+
+<!-- Not Expired -->
+<p class="text-sm mb-1"><strong>Not Expired:</strong> Only drugs that are not expired.</p>
 <table class="table-auto border-collapse border border-gray-300 text-xs mb-3">
   <tr><td class="border px-2 py-1">Paracetamol</td><td class="border px-2 py-1 text-red-600 font-semibold">OS</td></tr>
   <tr><td class="border px-2 py-1">Amoxicillin</td><td class="border px-2 py-1 text-orange-500 font-semibold">Critical</td></tr>
   <tr><td class="border px-2 py-1">Ibuprofen</td><td class="border px-2 py-1 text-green-600 font-semibold">Ok</td></tr>
 </table>
 
-<!-- Out -->
-<p class="text-sm mb-1"><strong>Out:</strong> Only drugs with zero stock.</p>
-<table class="table-auto border-collapse border border-gray-300 text-xs mb-3">
-  <tr><td class="border px-2 py-1">Paracetamol</td><td class="border px-2 py-1 text-red-600 font-semibold">OS</td></tr>
-</table>
-
-<!-- Critical Only -->
-<p class="text-sm mb-1"><strong>Critical Only:</strong> Only drugs at or below their critical level.</p>
-<table class="table-auto border-collapse border border-gray-300 text-xs mb-3">
-  <tr><td class="border px-2 py-1">Amoxicillin</td><td class="border px-2 py-1 text-orange-500 font-semibold">Critical</td></tr>
-</table>
-
-<!-- Ok -->
-<p class="text-sm mb-1"><strong>Ok:</strong> Only drugs with safe stock above critical level.</p>
+<!-- Not Expired + Ok -->
+<p class="text-sm mb-1"><strong>Not Expired + Ok:</strong> Shows drugs that are not expired and safe stock.</p>
 <table class="table-auto border-collapse border border-gray-300 text-xs mb-3">
   <tr><td class="border px-2 py-1">Ibuprofen</td><td class="border px-2 py-1 text-green-600 font-semibold">Ok</td></tr>
 </table>
 
-<!-- Critical + Ok -->
-<p class="text-sm mb-1"><strong>Critical + Ok:</strong> Shows both critical and safe stock drugs.</p>
+<!-- Near Expiry + Ok -->
+<p class="text-sm mb-1"><strong>Near Expiry + Ok:</strong> Shows drugs that are near expiry or safe stock.</p>
 <table class="table-auto border-collapse border border-gray-300 text-xs mb-3">
-  <tr><td class="border px-2 py-1">Amoxicillin</td><td class="border px-2 py-1 text-orange-500 font-semibold">Critical</td></tr>
+  <tr><td class="border px-2 py-1">Drug X</td><td class="border px-2 py-1 text-orange-500 font-semibold">Near Expiry</td></tr>
   <tr><td class="border px-2 py-1">Ibuprofen</td><td class="border px-2 py-1 text-green-600 font-semibold">Ok</td></tr>
-</table>
-
-<!-- Critical + Out -->
-<p class="text-sm mb-1"><strong>Critical + Out:</strong> Shows both critical and out-of-stock drugs.</p>
-<table class="table-auto border-collapse border border-gray-300 text-xs mb-3">
-  <tr><td class="border px-2 py-1">Paracetamol</td><td class="border px-2 py-1 text-red-600 font-semibold">OS</td></tr>
-  <tr><td class="border px-2 py-1">Amoxicillin</td><td class="border px-2 py-1 text-orange-500 font-semibold">Critical</td></tr>
 </table>
 
 
@@ -1260,6 +1225,34 @@
       <li>Finally, click <strong>Export to PDF</strong> to download a clean, shareable copy of the report.</li>
     </ol>
   </div>
+
+  <h3 class="font-semibold mt-4 mb-1">6. Inventory Pagination</h3>
+<p class="text-sm mb-3">
+  The inventory table uses a smart pagination system to keep navigation clean and easy, even with very large datasets.
+  Instead of showing every page number, the pagination bar displays:
+</p>
+<ul class="list-disc list-inside text-sm mb-3">
+  <li><strong>Prev / Next:</strong> Buttons to move backward or forward one page at a time.</li>
+  <li><strong>First Page:</strong> Always visible as page <code>1</code>.</li>
+  <li><strong>Ellipsis (…):</strong> Indicates skipped ranges of pages when the list is long.</li>
+  <li><strong>Current Page:</strong> Highlighted in blue, with one page before and one page after it shown for context.</li>
+  <li><strong>Last Page:</strong> Always visible as the final page number.</li>
+</ul>
+
+<p class="text-sm">
+  This design keeps the pagination bar compact and readable. For example, if your inventory has 90 pages and you are currently on page 45, the pagination will look like:
+</p>
+
+<p class="text-sm font-mono mb-3">
+  Prev&nbsp;&nbsp;1&nbsp;&nbsp;…&nbsp;&nbsp;44&nbsp;&nbsp;<span class="bg-blue-600 text-white px-1 rounded">45</span>&nbsp;&nbsp;46&nbsp;&nbsp;…&nbsp;&nbsp;90&nbsp;&nbsp;Next
+</p>
+
+<p class="text-sm">
+  - If you are near the beginning (e.g., page 2), the pagination will show <code>Prev 1 [2] 3 … N Next</code>.<br>
+  - If you are near the end (e.g., page 89 of 90), it will show <code>Prev 1 … 88 [89] 90 Next</code>.<br>
+  - This ensures you can always jump quickly to the first, last, or nearby pages without clutter.
+</p>
+
 
   <h3 class="font-semibold mt-4 mb-1">9. Pagination (Rows Per Page)</h3>
 <p class="text-sm mb-3">

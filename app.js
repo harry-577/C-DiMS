@@ -145,6 +145,25 @@ function openDatabase() {
   });
 }
 
+/* ============================================================
+   REQUEST PERSISTENT STORAGE (GLOBAL)
+   ============================================================ */
+if (navigator.storage && navigator.storage.persist) {
+  navigator.storage.persisted().then((isPersisted) => {
+    console.log("Already persisted?", isPersisted);
+    if (!isPersisted) {
+      navigator.storage.persist().then((granted) => {
+        console.log("Persistent storage granted?", granted);
+        if (granted) {
+          console.log("Your IndexedDB data is now protected from eviction.");
+        } else {
+          console.log("Browser denied persistent storage request.");
+        }
+      });
+    }
+  });
+}
+
 
 /* ============================================================
    Date formatting helper (dd/mm/yyyy) 12 Dec
@@ -625,48 +644,116 @@ let inventoryFilteredData = [];      // holds filtered + sorted drugs for curren
    INVENTORY PAGINATION HELPERS
    ===++++++ */
 
-/**
- * Build clickable page number buttons (1, 2, 3, ...)
- * and update the "Page X of Y" label.
- */
+/* ============================================================
+   INVENTORY SMART PAGINATION BUILDER
+   ============================================================ */
 function updateInventoryPaginationUI() {
   const pageNumbersDiv = document.getElementById("inventory-page-numbers");
   pageNumbersDiv.innerHTML = "";
 
+  const total = inventoryTotalPages;
+  const current = inventoryCurrentPage;
+
   // ✅ Page X of Y label
   const label = document.createElement("span");
-  label.textContent = `Page ${inventoryCurrentPage} of ${inventoryTotalPages}`;
-  label.classList.add("mx-2");
+  // label.textContent = `Page ${current} of ${total}`;
+  // label.classList.add("mx-2");
   pageNumbersDiv.appendChild(label);
 
-  // ✅ Create numbered page buttons
-  for (let i = 1; i <= inventoryTotalPages; i++) {
+  // If only 1 page, no need to render anything else
+  if (total <= 1) return;
+
+  // Helper to create a page button
+  const createBtn = (page, isActive = false) => {
     const btn = document.createElement("button");
-    btn.textContent = i;
+    btn.textContent = page;
     btn.className =
       "px-2 py-1 border rounded text-sm " +
-      (i === inventoryCurrentPage
-        ? "bg-blue-600 text-white"
-        : "bg-gray-100 dark:bg-gray-700 dark:text-gray-100");
+      (isActive
+        ? "bg-blue-600 text-white font-semibold"
+        : "bg-gray-100 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600");
 
     btn.addEventListener("click", () => {
-      inventoryCurrentPage = i;
+      inventoryCurrentPage = page;
       refreshInventoryTable();
     });
 
-    pageNumbersDiv.appendChild(btn);
+    return btn;
+  };
+
+  // Helper to create ellipsis
+  const createEllipsis = () => {
+    const span = document.createElement("span");
+    span.textContent = "…";
+    span.className = "px-2 text-gray-500";
+    return span;
+  };
+
+  /* ============================================================
+     ALWAYS SHOW FIRST PAGE
+     ==== */
+  pageNumbersDiv.appendChild(createBtn(1, current === 1));
+
+  /* ============================================================
+     LEFT ELLIPSIS (if needed)
+     ==== */
+  if (current > 3) {
+    pageNumbersDiv.appendChild(createEllipsis());
+  }
+
+  /* ============================================================
+     CURRENT PAGE ±1
+     ===== */
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+
+  for (let p = start; p <= end; p++) {
+    pageNumbersDiv.appendChild(createBtn(p, p === current));
+  }
+
+  /* ============================================================
+     RIGHT ELLIPSIS (if needed)
+     ===== */
+  if (current < total - 2) {
+    pageNumbersDiv.appendChild(createEllipsis());
+  }
+
+  /* ============================================================
+     ALWAYS SHOW LAST PAGE
+     ==== */
+  if (total > 1) {
+    pageNumbersDiv.appendChild(createBtn(total, current === total));
   }
 
   // ✅ Enable/disable Prev/Next buttons
-  document.getElementById("inventory-prev-page").disabled =
-    inventoryCurrentPage === 1;
-
-  document.getElementById("inventory-next-page").disabled =
-    inventoryCurrentPage === inventoryTotalPages;
+  document.getElementById("inventory-prev-page").disabled = current === 1;
+  document.getElementById("inventory-next-page").disabled = current === total;
 }
+
 // ++++++++++++++++++++++++++++
 
+/* ============================================================
+   INVENTORY INITIALIZATION
+   ============================================================ */
 function initInventory() {
+  // // 🟢 Request persistent storage to protect IndexedDB data
+  // if (navigator.storage && navigator.storage.persist) {
+  //   navigator.storage.persisted().then((isPersisted) => {
+  //     console.log("Already persisted?", isPersisted);
+  //     if (!isPersisted) {
+  //       navigator.storage.persist().then((granted) => {
+  //         console.log("Persistent storage granted?", granted);
+  //         if (granted) {
+  //           console.log("Your IndexedDB data is now protected from eviction.");
+  //         } else {
+  //           console.log("Browser denied persistent storage request.");
+  //         }
+  //       });
+  //     }
+  //   });
+  // }
+
+
   const form = document.getElementById("drug-form");
   const expiryInput = document.getElementById("drug-expiry");
 
@@ -857,6 +944,9 @@ async function refreshInventoryTable() {
 
   let drugs = await getAllDrugs();
 
+  // 🟢 Debug log: see what we got from IndexedDB
+  console.log("refreshInventoryTable → raw drugs from DB:", drugs.length, drugs);
+
   // Alphabetical ordering
   drugs.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -878,35 +968,87 @@ async function refreshInventoryTable() {
       isExpired = dateObj < today;
     }
 
-    let matchesStatus = true;
+/* ============================================================
+   STATUS FILTER HANDLING (extended options)
+   ============================================================ */
+let matchesStatus = true;
 
-    switch (statusFilter) {
-      case "ok":
-        matchesStatus = isOk;
-        break;
-      case "out":
-        matchesStatus = isOut;
-        break;
-      case "critical":
-        matchesStatus = isCritical;
-        break;
-      case "critical-ok":
-        matchesStatus = isCritical || isOk;
-        break;
-      case "critical-out":
-        matchesStatus = isCritical || isOut;
-        break;
-      case "expired":
-        matchesStatus = isExpired;
-        break;
-      case "all":
-      default:
-        matchesStatus = true;
-        break;
+switch (statusFilter) {
+  case "ok":
+    matchesStatus = isOk;
+    break;
+  case "out":
+    matchesStatus = isOut;
+    break;
+  case "critical":
+    matchesStatus = isCritical;
+    break;
+  case "critical-ok":
+    matchesStatus = isCritical || isOk;
+    break;
+  case "critical-out":
+    matchesStatus = isCritical || isOut;
+    break;
+  case "expired":
+    matchesStatus = isExpired;
+    break;
+  case "near-expiry":
+    // near expiry means expiry within 5 days
+    let isNearExpiry = false;
+    if (d.expiry && d.expiry.includes("/")) {
+      const [day, month, year] = d.expiry.split("/");
+      const dateObj = new Date(year, month - 1, day);
+      const today = new Date();
+      const diffMs = dateObj - today;
+      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      isNearExpiry = diffDays > 0 && diffDays <= 5;
     }
+    matchesStatus = isNearExpiry;
+    break;
+  case "near-expiry-expired":
+    // combine near expiry + expired
+    let isNear = false;
+    if (d.expiry && d.expiry.includes("/")) {
+      const [day, month, year] = d.expiry.split("/");
+      const dateObj = new Date(year, month - 1, day);
+      const today = new Date();
+      const diffMs = dateObj - today;
+      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      isNear = diffDays > 0 && diffDays <= 5;
+    }
+    matchesStatus = isNear || isExpired;
+    break;
+  case "not-expired":
+    matchesStatus = !isExpired;
+    break;
+  case "not-expired-ok":
+    matchesStatus = !isExpired && isOk;
+    break;
+  case "near-expiry-ok":
+    // near expiry OR ok
+    let isNearOk = false;
+    if (d.expiry && d.expiry.includes("/")) {
+      const [day, month, year] = d.expiry.split("/");
+      const dateObj = new Date(year, month - 1, day);
+      const today = new Date();
+      const diffMs = dateObj - today;
+      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      isNearOk = diffDays > 0 && diffDays <= 5;
+    }
+    matchesStatus = isNearOk || isOk;
+    break;
+  case "all":
+  default:
+    matchesStatus = true;
+    break;
+}
+
 
     return matchesName && matchesClass && matchesStatus;
   });
+
+// 🟢 Debug log: after filtering
+  console.log("refreshInventoryTable → after filters:", drugs.length, drugs);
 
   /* ====
      ✅ NO RESULTS HANDLING
@@ -2310,6 +2452,61 @@ async function refreshDispenseTable() {
   /* ============================================================
    REPORTS PAGINATION HELPERS (SMART PAGINATION)
    ============================================================ */
+// function buildReportsPageNumbers() {
+//   const container = document.getElementById("reports-page-numbers");
+//   if (!container) return;
+//   container.innerHTML = "";
+
+//   const total = reportsTotalPages;
+//   const current = reportsCurrentPage;
+
+//   if (total <= 1) return;
+
+//   const createBtn = (page, isActive = false) => {
+//     const btn = document.createElement("button");
+//     btn.textContent = page;
+//     btn.className =
+//       "px-2 py-1 border rounded text-sm " +
+//       (isActive
+//         ? "bg-blue-600 text-white font-semibold"
+//         : "dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600");
+//     btn.addEventListener("click", () => {
+//       reportsCurrentPage = page;
+//       renderReportsTable(); // only re-render table slice
+//     });
+//     return btn;
+//   };
+
+//   const createEllipsis = () => {
+//     const span = document.createElement("span");
+//     span.textContent = "…";
+//     span.className = "px-2 text-gray-500";
+//     return span;
+//   };
+
+//   // First page
+//   container.appendChild(createBtn(1, current === 1));
+
+//   // Left ellipsis
+//   if (current > 2) container.appendChild(createEllipsis());
+
+//   // Middle pages
+//   const start = Math.max(2, current - 2);
+//   const end = Math.min(total - 1, current + 2);
+//   for (let p = start; p <= end; p++) {
+//     container.appendChild(createBtn(p, p === current));
+//   }
+
+//   // Right ellipsis
+//   if (current < total - 1) container.appendChild(createEllipsis());
+
+//   // Last page
+//   if (total > 1) container.appendChild(createBtn(total, current === total));
+// }
+
+/* ============================================================
+   REPORTS SMART PAGINATION BUILDER (compact style)
+   ============================================================ */
 function buildReportsPageNumbers() {
   const container = document.getElementById("reports-page-numbers");
   if (!container) return;
@@ -2320,6 +2517,7 @@ function buildReportsPageNumbers() {
 
   if (total <= 1) return;
 
+  // Helper: create page button
   const createBtn = (page, isActive = false) => {
     const btn = document.createElement("button");
     btn.textContent = page;
@@ -2327,14 +2525,16 @@ function buildReportsPageNumbers() {
       "px-2 py-1 border rounded text-sm " +
       (isActive
         ? "bg-blue-600 text-white font-semibold"
-        : "dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600");
+        : "bg-gray-100 dark:bg-gray-700 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600");
     btn.addEventListener("click", () => {
       reportsCurrentPage = page;
-      renderReportsTable(); // only re-render table slice
+      renderReportsTable(); // re-render table slice
+      updateReportsPaginationUI(); // ✅ ensure pagination updates too
     });
     return btn;
   };
 
+  // Helper: ellipsis
   const createEllipsis = () => {
     const span = document.createElement("span");
     span.textContent = "…";
@@ -2342,25 +2542,34 @@ function buildReportsPageNumbers() {
     return span;
   };
 
-  // First page
+  // Always show first page
   container.appendChild(createBtn(1, current === 1));
 
-  // Left ellipsis
-  if (current > 2) container.appendChild(createEllipsis());
+  // Left ellipsis if needed
+  if (current > 3) {
+    container.appendChild(createEllipsis());
+  }
 
-  // Middle pages
-  const start = Math.max(2, current - 2);
-  const end = Math.min(total - 1, current + 2);
+  // Current page ±1
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
   for (let p = start; p <= end; p++) {
     container.appendChild(createBtn(p, p === current));
   }
 
-  // Right ellipsis
-  if (current < total - 1) container.appendChild(createEllipsis());
+  // Right ellipsis if needed
+  if (current < total - 2) {
+    container.appendChild(createEllipsis());
+  }
 
-  // Last page
-  if (total > 1) container.appendChild(createBtn(total, current === total));
+  // Always show last page
+  if (total > 1) {
+    container.appendChild(createBtn(total, current === total));
+  }
 }
+
+
+          // ++++++++++++++++++ 29 Dec 2025 ++++++++++++++++
 
 function updateReportsPaginationUI() {
   const prevBtn = document.getElementById("reports-prev-page");
@@ -2527,6 +2736,9 @@ async function updateReports() {
 
   const records = await getAllDispenses();
 
+  // 🟢 Debug log: see what we got from IndexedDB
+  console.log("updateReports → raw dispenses from DB:", records.length, records);
+
   let filtered = records.filter((r) => {
     const d = new Date(r.dateDispensed);
     const inRange = d >= start && d <= end;
@@ -2535,6 +2747,9 @@ async function updateReports() {
       .includes(departmentFilter);
     return inRange && deptMatch;
   });
+
+   // 🟢 Debug log: after filtering
+  console.log("updateReports → after filters:", filtered.length, filtered);
 
   // SORTING
   if (reportCurrentSort === "date-desc") {
@@ -2555,6 +2770,9 @@ async function updateReports() {
 
   // Store full filtered dataset for table, summary, and PDF
   reportsFilteredData = filtered;
+
+   // 🟢 Debug log: final dataset stored
+  console.log("updateReports → reportsFilteredData:", reportsFilteredData.length, reportsFilteredData);
 
   // Summary
   const totalQty = reportsFilteredData.reduce(
@@ -2602,6 +2820,9 @@ async function updateReports() {
   if (reportsFilteredData.length === 0) {
     reportsCurrentPage = 1;
   }
+
+  // ✅ Ensure pagination UI updates immediately
+  updateReportsPaginationUI();
 
   // Render table slice
   renderReportsTable();
