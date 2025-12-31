@@ -330,22 +330,28 @@
           <label class="block text-sm font-medium">Quantity Supplied</label>
           <input id="drug-quantity" type="number" min="0"
                  class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" required />
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <!-- <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
             This sets the current stock. Use "Add Stock" for increments.
+          </p> -->
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Current stock. Use "Add Stock" for increments.
           </p>
         </div>
 
         <div>
-          <label class="block text-sm font-medium">Critical Level</label>
+          <label class="block text-sm font-medium">Critical Level (Qty)</label>
           <input id="drug-critical" type="number" min="0"
                  class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" />
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <!-- <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
             When quantity ≤ this, the item is flagged as critical.
+          </p> -->
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            When quantity ≤ this, item is flagged as critical.
           </p>
         </div>
 
-        <div class="flex items-end">
-          <button type="submit" class="px-4 py-2 md:mb-8 bg-primary text-white rounded w-full">
+        <div class="flex flex-row items-center">
+          <button type="submit" class="px-4 py-2 md:mb-5 bg-primary text-white rounded w-full">
             Save / Add
           </button>
         </div>
@@ -460,9 +466,9 @@
       <!-- <span class="print-icon" style="cursor:pointer; font-size:20px;" onclick="printSection('section-dispense')" title="Print Dispense">🖨️</span> -->
 
 
-      <form id="dispense-form" class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+      <form id="dispense-form" class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6">
         <div>
-          <label class="block text-sm font-medium">Drug</label>
+          <label class="block text-sm font-medium">Drug Name</label>
           <select id="dispense-drug" class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700"></select>
         </div>
 
@@ -487,7 +493,7 @@
         <div>
           <label class="block text-sm font-medium">Department</label>
           <select id="dispense-department-select" class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700">
-            <option value="">Select department</option>
+            <option value="">Select</option>
             <option value="A & E">A & E</option>
             <option value="ENT">ENT</option>
             <option value="General Ward">General Ward</option>
@@ -511,7 +517,7 @@
         <div>
           <label class="block text-sm font-medium">Authorized by</label>
           <select id="authorized-by-select" class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700">
-            <option value="">Select Authority</option>
+            <option value="">Select</option>
             <option value="CMAC">CMAC</option>
             <option value="HOD Pharmacy">HOD Pharmacy</option>
             <option value="DD">DD</option>
