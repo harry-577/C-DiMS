@@ -2,7 +2,8 @@
 <html lang="en" class="bg-gray-100">
 <head>
   <meta charset="UTF-8" />
-  <title>Drugs Inventory Management</title>
+  <!-- <title>Drugs Inventory Management</title> -->
+  <title>C-Dims</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Favicon -->
@@ -239,7 +240,7 @@
         Inventory
       </button>
       <button id="tab-dispense" class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-800 dark:text-gray-100 rounded text-center">
-        Dispense
+        Requisition
       </button>
       <button id="tab-reports" class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-800 dark:text-gray-100 rounded text-center">
         Reports
@@ -285,7 +286,7 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium">Classification</label>
+          <label class="block text-sm font-medium">Class</label>
           <input id="drug-classification" class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" />
         </div>
 
@@ -339,7 +340,7 @@
         </div>
 
         <div>
-          <label class="block text-sm font-medium">Critical Level (Qty)</label>
+          <label class="block text-sm font-medium">Critical Qty</label>
           <input id="drug-critical" type="number" min="0"
                  class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700" />
           <!-- <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -449,7 +450,8 @@
 
     <!-- Dispense section -->
     <section id="section-dispense" class="bg-white dark:bg-gray-800 dark:text-gray-100 p-4 md:p-6 rounded shadow hidden">
-      <h2 class="text-xl font-semibold mb-4">Dispense Drugs</h2>
+      <!-- <h2 class="text-xl font-semibold mb-4">Dispense Drugs</h2> -->
+      <h2 class="text-xl font-semibold mb-4">Requisition</h2>
 
     
       <!-- <button onclick="printSection('section-reports')">Print Reports</button>
@@ -491,7 +493,8 @@
         </div> -->
 
         <div>
-          <label class="block text-sm font-medium">Department</label>
+          <!-- <label class="block text-sm font-medium">Department/ Unit</label> -->
+          <label class="block text-sm font-medium">Department/ Unit</label>
           <select id="dispense-department-select" class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700">
             <option value="">Select</option>
             <option value="A & E">A & E</option>
@@ -501,7 +504,7 @@
             <option value="O & G">O & G</option>
             <option value="Presidential Wing">Presidential Wing</option>
             <option value="Travel-Bag">Travel Bag</option>
-            <option value="Other">Other (type manually)</option>
+            <option value="Other">Other (Type manually)</option>
           </select>
           <input id="dispense-department-text"
                 class="mt-2 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700 hidden"
@@ -532,7 +535,8 @@
 
         <div class="flex items-end">
           <button type="submit" class="px-4 py-2 bg-primary text-white rounded w-full">
-            Dispense
+            <!-- Dispense -->
+            Issue
           </button>
         </div>
       </form>
@@ -663,7 +667,8 @@
           <!-- Main filtered table PDF -->
           <button id="btn-export-pdf"
                   class="px-4 py-2 bg-red-600 text-white rounded text-sm flex-1">
-            Export Filtered Dispense PDF
+            <!-- Export Filtered Dispense PDF -->
+            Export Filtered Requisition PDF
           </button>
 
           <!-- Dashboard summary PDF -->
@@ -687,18 +692,22 @@
       
       <!-- Summary cards including per-department -->
       <details class="mb-2">
-        <summary class="mb-2 cursor-pointer">Show/Hide Dispense Summary cards</summary>
+        <!-- <summary class="mb-2 cursor-pointer">Show/Hide Dispense Summary cards</summary> -->
+        <summary class="mb-2 cursor-pointer">Show/Hide Requisition Summary cards</summary>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <div class="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 p-3 rounded">
-          <p class="text-sm text-gray-600 dark:text-gray-200">Total quantity dispensed</p>
+          <!-- <p class="text-sm text-gray-600 dark:text-gray-200">Total quantity dispensed</p> -->
+          <p class="text-sm text-gray-600 dark:text-gray-200">Total quantity requested</p
           <p id="report-total-qty" class="text-xl font-bold">0</p>
         </div>
         <div class="bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 p-3 rounded">
-          <p class="text-sm text-gray-600 dark:text-gray-200">Number of dispenses</p>
+          <!-- <p class="text-sm text-gray-600 dark:text-gray-200">Number of dispenses</p> -->
+          <p class="text-sm text-gray-600 dark:text-gray-200">Number of requisitions</p>
           <p id="report-total-count" class="text-xl font-bold">0</p>
         </div>
         <div class="bg-purple-50 dark:bg-purple-900 border border-purple-200 dark:border-purple-700 p-3 rounded">
-          <p class="text-sm text-gray-600 dark:text-gray-200">Departments summary</p>
+          <!-- <p class="text-sm text-gray-600 dark:text-gray-200">Departments summary</p> -->
+          <p class="text-sm text-gray-600 dark:text-gray-200">Departments/ Units summary</p>
           <div id="report-dept-summary" class="text-xs mt-1 space-y-1">
             <!-- Filled by JS -->
           </div>
@@ -715,7 +724,8 @@
               <th class="px-2 py-1">S/N</th>
               <th class="px-2 py-1">Date</th>
               <th class="px-2 py-1">Drug</th>
-              <th class="px-2 py-1">Department</th>
+              <!-- <th class="px-2 py-1">Department</th> -->
+              <th class="px-2 py-1">Dept/ Unit</th>
               <th class="px-2 py-1">Qty</th>
               <th class="px-2 py-1">Classification</th>
             </tr>
@@ -742,7 +752,7 @@
           <select id="reports-page-size"
                   class="border rounded px-2 py-1 text-sm dark:bg-gray-900 dark:border-gray-700">
             <option value="10">10</option>
-            <option value="25">25</option>
+            <option value="25" selected>25</option>
             <option value="50">50</option>
             <option value="100">100</option>
           </select>
@@ -809,7 +819,8 @@
     <div class="border rounded p-4 dark:border-gray-700">
       <h3 class="font-semibold mb-2 text-sm">Data Backup & Restore</h3>
       <p class="text-xs text-gray-600 dark:text-gray-300 mb-3">
-        You can download a backup file of all data (inventory, dispenses, and settings) and later restore it on this or another device.
+        <!-- You can download a backup file of all data (inventory, dispenses, and settings) and later restore it on this or another device. -->
+        You can download a backup file of all data (Inventory, Requisitions, and Settings) and later restore it on this or another device.
       </p>
 
       <div class="space-y-3 mb-4">
@@ -883,25 +894,30 @@
 
     <!-- Dispenses CSV Export / Import -->
     <div class="border rounded p-4 dark:border-gray-700">
-      <h3 class="font-semibold mb-2 text-sm">Dispense Records (CSV)</h3>
+      <!-- <h3 class="font-semibold mb-2 text-sm">Dispense Records (CSV)</h3> -->
+      <h3 class="font-semibold mb-2 text-sm">Requisition Records (CSV)</h3>
       <p class="text-xs text-gray-600 dark:text-gray-300 mb-3">
-        Export or import dispense records as a CSV file. You can overwrite all data or merge new entries.
+        <!-- Export or import dispense records as a CSV file. You can overwrite all data or merge new entries. -->
+         Export or import requisition records as a CSV file. You can overwrite all data or merge new entries.
       </p>
 
       <!-- Export Dispenses -->
       <div class="space-y-3 mb-4">
         <button id="btn-export-dispenses"
                 class="px-4 py-2 bg-primary text-white rounded text-sm">
-          Download Dispenses CSV
+          <!-- Download Dispenses CSV -->
+           Download Requisitions CSV
         </button>
         <p class="text-xs text-gray-500 dark:text-gray-300">
-          This will download all dispense records in CSV format.
+          <!-- This will download all dispense records in CSV format. -->
+           This will download all requisition records in CSV format.
         </p>
       </div>
 
       <!-- Import Dispenses -->
       <div class="space-y-3">
-        <label class="block text-sm font-medium">Import Dispenses from CSV File</label>
+        <!-- <label class="block text-sm font-medium">Import Dispenses from CSV File</label> -->
+         <label class="block text-sm font-medium">Import Requisitions from CSV File</label>
         <input id="excel-dispenses-input" type="file" accept=".csv"
                class="mt-1 w-full border rounded px-2 py-1 dark:bg-gray-900 dark:border-gray-700 text-xs" />
         <p class="text-xs text-gray-500 dark:text-gray-300">
@@ -910,11 +926,13 @@
         <div class="flex flex-col md:flex-row gap-2 mt-2">
           <button id="btn-import-dispenses-full"
                   class="px-4 py-2 bg-red-600 text-white rounded text-sm flex-1">
-            Full Import (Overwrite All Dispenses)
+            <!-- Full Import (Overwrite All Dispenses) -->
+             Full Import (Overwrite All Requisitions)
           </button>
           <button id="btn-import-dispenses-merge"
                   class="px-4 py-2 bg-green-600 text-white rounded text-sm flex-1">
-            Merge Import (Add Dispenses Only)
+            <!-- Merge Import (Add Dispenses Only) -->
+             Merge Import (Add Requisitions Only)
           </button>
         </div>
       </div>
@@ -968,7 +986,7 @@
       <h2 class="text-xl font-semibold mb-4">About This App</h2>
       <p class="text-sm leading-relaxed mb-3">
         This Drugs Inventory Management System helps healthcare facilities track drug stock,
-        dispensing activities, and departmental usage.
+        requisition activities, and departmental usage.
       </p>
       <p class="text-sm leading-relaxed mb-3">
         The app works offline using IndexedDB and can be installed as a Progressive Web App (PWA)
@@ -1094,7 +1112,7 @@
     optionally filter by department, and review the table and summary cards.
   </p>
 
-  <h3 class="font-semibold mt-4 mb-1">5. Search and Filter for Inventory</h3>
+  <h3 class="font-semibold mt-4 mb-1">6. Search and Filter for Inventory</h3>
 <p class="text-sm mb-3">
   The inventory table includes a powerful search and filter panel at the top to help you quickly find the drugs you need.
 </p>
@@ -1187,7 +1205,7 @@
 
 
 
-  <h3 class="font-semibold mt-4 mb-1">6. Exporting and Managing Reports</h3>
+  <h3 class="font-semibold mt-4 mb-1">7. Exporting and Managing Reports</h3>
   <p class="text-sm mb-3">
   In the Reports tab, you can refine, organize, and export your data with several tools:
   </p>
@@ -1232,7 +1250,7 @@
     </ol>
   </div>
 
-  <h3 class="font-semibold mt-4 mb-1">6. Inventory Pagination</h3>
+  <h3 class="font-semibold mt-4 mb-1">8. Inventory Pagination</h3>
 <p class="text-sm mb-3">
   The inventory table uses a smart pagination system to keep navigation clean and easy, even with very large datasets.
   Instead of showing every page number, the pagination bar displays:
@@ -1306,13 +1324,14 @@
 
 
 
-  <h3 class="font-semibold mt-4 mb-1">7. Changing the Increment PIN</h3>
+  <!-- <h3 class="font-semibold mt-4 mb-1">7. Changing the Increment PIN</h3> -->
+   <h3 class="font-semibold mt-4 mb-1">14. Changing the Increment PIN</h3>
   <p class="text-sm mb-3">
     Go to the <strong>Settings</strong> tab. Enter your current PIN or the master PIN,
     then set and confirm the new PIN and click <strong>Save New PIN</strong>.
   </p>
 
-  <h3 class="font-semibold mt-4 mb-1">14. Inventory PDF</h3>
+  <h3 class="font-semibold mt-4 mb-1">15. Inventory PDF</h3>
   <p class="text-sm mb-3">
     In the <strong>Inventory</strong> tab, you can export the full list of drugs by clicking
     <strong>Export Inventory PDF</strong>. The PDF includes all inventory items, their
@@ -1321,7 +1340,7 @@
     optional watermark if enabled in <strong>Settings</strong>.
   </p>
 
-  <h3 class="font-semibold mt-4 mb-1">15. Dispense PDF</h3>
+  <h3 class="font-semibold mt-4 mb-1">16. Dispense PDF</h3>
   <p class="text-sm mb-3">
     In the <strong>Dispense</strong> tab, you can export all dispense records using
     <strong>Export Dispense PDF</strong>. This PDF includes every dispense entry along with
@@ -1329,14 +1348,15 @@
     settings and displays dates in <strong>dd/mm/yyyy</strong> format.
   </p>
 
-  <h3 class="font-semibold mt-4 mb-1">8. Backup & Restore (JSON)</h3>
+  <!-- <h3 class="font-semibold mt-4 mb-1">8. Backup & Restore (JSON)</h3> -->
+   <h3 class="font-semibold mt-4 mb-1">17. Backup & Restore (JSON)</h3>
   <p class="text-sm mb-3">
     In the <strong>Settings</strong> tab, use <strong>Download Backup File</strong> to save all data to a JSON file.
     To restore, choose a file and select either <strong>Full Restore</strong> (overwrites current data) or
     <strong>Merge Restore</strong> (adds missing items only).
   </p>
 
-  <h3 class="font-semibold mt-4 mb-1">9. Import/Export Inventory (Excel/CSV)</h3>
+  <h3 class="font-semibold mt-4 mb-1">18. Import/Export Inventory (Excel/CSV)</h3>
   <p class="text-sm mb-3">
     In the <strong>Settings</strong> tab, use <strong>Download Inventory Excel (CSV)</strong> to export all inventory records.
     To import, choose an Excel file <strong>saved as CSV format </strong>with the correct headings and select either <strong>Full Import</strong> (overwrite all inventory) or
@@ -1345,7 +1365,7 @@
     Empty cells are allowed but will be treated as blank or zero.
   </p>
 
-  <h3 class="font-semibold mt-4 mb-1">10. Import/Export Dispenses (Excel/CSV)</h3>
+  <h3 class="font-semibold mt-4 mb-1">19. Import/Export Dispenses (Excel/CSV)</h3>
   <p class="text-sm mb-3">
     In the <strong>Settings</strong> tab, use <strong>Download Dispenses Excel (CSV)</strong> to export all dispense records.
     To import, choose an Excel file <strong>saved as CSV format </strong>with the correct headings and select either <strong>Full Import</strong> (overwrite all dispense records) or
@@ -1354,20 +1374,20 @@
     Empty cells are allowed but will be treated as blank or zero.
   </p>
 
-  <h3 class="font-semibold mt-4 mb-1">11. Dark Mode</h3>
+  <h3 class="font-semibold mt-4 mb-1">20. Dark Mode</h3>
   <p class="text-sm mb-3">
     Use the sun/moon button in the top-right corner of the app to switch between light and dark mode.
     Your choice is remembered on this device.
   </p>
 
-  <h3 class="font-semibold mt-4 mb-1">12. Lock App Button</h3>
+  <h3 class="font-semibold mt-4 mb-1">21. Lock App Button</h3>
   <p class="text-sm mb-3">
     At the bottom left corner of the app, in the footer bar, you will see a <strong>Lock App</strong> button 🔒.
     Clicking this button will immediately lock the app and require you to re‑enter your PIN before you can continue.
     Use this feature whenever you step away from your device to keep your data secure.
   </p>
 
-  <h3 class="font-semibold mt-4 mb-1">16. Logo & Watermark Settings</h3>
+  <h3 class="font-semibold mt-4 mb-1">22. Logo & Watermark Settings</h3>
   <p class="text-sm mb-3">
     In the <strong>Settings</strong> tab, under <strong>PDF Branding</strong>, you can upload a
     custom <strong>Facility Logo</strong> to replace the default Cathy‑DiMS logo in all PDFs.
@@ -1376,7 +1396,7 @@
     logo or <strong>Reset Branding to Default</strong> to clear all branding settings at once.
   </p>
 
-  <h3 class="font-semibold mt-4 mb-1">17. User Roles (If Enabled)</h3>
+  <h3 class="font-semibold mt-4 mb-1">23. User Roles (If Enabled)</h3>
   <p class="text-sm mb-3">
     If your installation includes user roles, access to certain features may vary. For
     example, administrators may have full access to inventory management, dispense
@@ -1387,7 +1407,7 @@
 
 
 
-  <h3 class="font-semibold mt-4 mb-1">18. Troubleshooting</h3>
+  <h3 class="font-semibold mt-4 mb-1">24. Troubleshooting</h3>
   <p class="text-sm mb-1">
     - If data disappears, make sure you are using the same browser and device.
   </p>
@@ -1416,7 +1436,7 @@
     - If something still doesn’t work, contact your administrator for support.
   </p>
 
-   <h3 class="font-semibold mt-4 mb-1">14. Quick Reference: Excel/CSV Column Headings</h3>
+   <h3 class="font-semibold mt-4 mb-1">25. Quick Reference: Excel/CSV Column Headings</h3>
   <p class="text-sm mb-3">
     When importing data from Excel (CSV), the file must include the correct header row.  
     Use the tables below to confirm the required column order for Inventory and Dispenses.
@@ -1450,10 +1470,11 @@
     <table class="min-w-full border text-xs">
       <thead class="bg-gray-100 dark:bg-gray-700">
         <tr>
-          <th class="border px-2 py-1">Dispenses Required Headers</th>
+          <!-- <th class="border px-2 py-1">Dispenses Required Headers</th> -->
+           <th class="border px-2 py-1">Requisitions Required Headers</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="flex flex-row justify-start">
         <tr><td class="border px-2 py-1">S/N</td></tr>
         <tr><td class="border px-2 py-1">DateDispensed</td></tr>
         <tr><td class="border px-2 py-1">DrugName</td></tr>
