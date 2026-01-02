@@ -1128,6 +1128,53 @@ switch (statusFilter) {
       }
     }
 
+    // tr.innerHTML = `
+    //   <td class="px-2 py-1">${sn++}</td>
+    //   <td class="px-2 py-1">${drug.name}</td>
+    //   <td class="px-2 py-1">${drug.classification || "-"}</td>
+    //   <td class="px-2 py-1">${drug.subClass || "-"}</td>
+    //   <td class="px-2 py-1 ${expiryClass}">${drug.expiry || "-"}</td>
+    //   <td class="px-2 py-1">${drug.packSize || "-"}</td>
+    //   <td class="px-2 py-1">${drug.unit || "-"}</td>
+    //   <td class="px-2 py-1">${drug.quantity}</td>
+    //   <td class="px-2 py-1">${drug.criticalLevel || 0}</td>
+    //   <td class="px-2 py-1 ${statusClass}">${statusText}</td>
+    //   <td class="px-2 py-1">
+
+
+    //     <Div class="flex flex-row flex-nowrap gap-2">
+
+    //     <!-- Edit button -->
+    //     <button title="Edit entry" class="text-sm px-2 py-1 rounded text-blue-600 hover:bg-blue-700 hover:text-white transition-colors mr-1"
+    //             data-action="edit" data-id="${drug.id}">
+    //       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    //         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+    //               d="M11 4h2m2-2l6 6-10 10H5v-4l10-10z" />
+    //       </svg>
+    //     </button>
+
+    //     <!-- Add Stock button -->
+    //     <button title="Add stock" class="text-sm px-2 py-1 rounded text-green-600 hover:bg-green-700 hover:text-white transition-colors font-bold"
+    //             data-action="increment" data-id="${drug.id}">
+    //       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    //         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+    //               d="M12 4v16m8-8H4" />
+    //       </svg>
+    //     </button>
+
+    //     <!-- Delete entry button -->
+    //     <button title="Delete entry" class="text-sm px-2 py-1 text-red-600 hover:bg-red-700 hover:text-white transition-colors ml-1"
+    //             data-action="delete" data-id="${drug.id}">
+    //       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    //         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+    //               d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3" />
+    //       </svg>
+    //     </button>
+    //     </Div>
+
+    //   </td>
+    // `;
+
     tr.innerHTML = `
       <td class="px-2 py-1">${sn++}</td>
       <td class="px-2 py-1">${drug.name}</td>
@@ -1140,36 +1187,40 @@ switch (statusFilter) {
       <td class="px-2 py-1">${drug.criticalLevel || 0}</td>
       <td class="px-2 py-1 ${statusClass}">${statusText}</td>
       <td class="px-2 py-1">
+        <div class="flex flex-row flex-nowrap gap-1 overflow-x-auto -mx-2 px-2">
+          <!-- Edit button -->
+          <button title="Edit entry"
+            class="flex-shrink-0 text-sm px-2 py-1 rounded text-blue-600 hover:bg-blue-700 hover:text-white transition-colors mr-1"
+            data-action="edit" data-id="${drug.id}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11 4h2m2-2l6 6-10 10H5v-4l10-10z" />
+            </svg>
+          </button>
 
-        <!-- Edit button -->
-        <button title="Edit entry" class="text-sm px-2 py-1 rounded text-blue-600 hover:bg-blue-700 hover:text-white transition-colors mr-1"
-                data-action="edit" data-id="${drug.id}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M11 4h2m2-2l6 6-10 10H5v-4l10-10z" />
-          </svg>
-        </button>
+          <!-- Add Stock button -->
+          <button title="Add stock"
+            class="flex-shrink-0 text-sm px-2 py-1 rounded text-green-600 hover:bg-green-700 hover:text-white transition-colors font-bold"
+            data-action="increment" data-id="${drug.id}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
 
-        <!-- Add Stock button -->
-        <button title="Add stock" class="text-sm px-2 py-1 rounded text-green-600 hover:bg-green-700 hover:text-white transition-colors font-bold"
-                data-action="increment" data-id="${drug.id}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 4v16m8-8H4" />
-          </svg>
-        </button>
-
-        <!-- Delete entry button -->
-        <button title="Delete entry" class="text-sm px-2 py-1 text-red-600 hover:bg-red-700 hover:text-white transition-colors ml-1"
-                data-action="delete" data-id="${drug.id}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3" />
-          </svg>
-        </button>
-
+          <!-- Delete entry button -->
+          <button title="Delete entry"
+            class="flex-shrink-0 text-sm px-2 py-1 text-red-600 hover:bg-red-700 hover:text-white transition-colors ml-1"
+            data-action="delete" data-id="${drug.id}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4h6v3" />
+            </svg>
+          </button>
+        </div>
       </td>
     `;
+
 
     tbody.appendChild(tr);
   });
